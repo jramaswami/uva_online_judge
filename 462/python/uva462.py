@@ -4,92 +4,67 @@ https://uva.onlinejudge.org/external/4/462.pdf
 """
 
 import sys
-from collections import namedtuple, Counter
 
 
-CLUBS = 1
+class Suit:
+    """Represent suit in a hand."""
+    def __init__(self, name):
+        self.name = name
+        self.ace = 0
+        self.king = 0
+        self.queen = 0
+        self.jack = 0
+        self.count = 0
 
-JACK = 11
-QUEEN = 12
-KING = 13
-ACE = 14
+    def append(self, card):
+        """Add card to suit."""
+        if card == 'A':
+            self.ace = 4
+        elif card == 'K':
+            self.king = 3
+        elif card == 'Q':
+            self.queen = 2
+        elif card == 'J':
+            self.jack = 1
 
-SUIT_ABBREV = ['', 'C', 'D', 'H', 'S']
-SUITS = {"S": 400, "H": 300, "D": 200, "C": 100}
-FACES = dict([(str(i), i) for i in range(2, 10)])
-FACES.update({'T': 10, 'J': JACK, 'Q': QUEEN, 'K': KING, 'A': ACE})
+        self.count += 1
 
-Hand = namedtuple('Hand', ['cards', 'suits'])
-
-
-def is_face_card(card):
-    """Return True if card is face card."""
-    return card % 100 > 10
-
-
-def card_value(card):
-    """Returns value of card."""
-    if is_face_card(card):
-        return (card % 100) - 10
-    else:
-        return 0
-
-
-def card_suit(card):
-    """Returns the integer representing the suit."""
-    return card // 100
+    def __repr__(self):
+        return "%s: %d cards A=%d K=%d Q=%d J=%d" % (self.name, self.count,
+                                                     self.ace, self.king,
+                                                     self.queen, self.jack)
 
 
-def opening_bid(hand):
-    """Returns the opening bid for the given hand."""
-    score = 0
+class Hand:
+    """Represents bridge hand."""
+    def __init__(self, data):
+        self.spades = Suit('Spades')
+        self.hearts = Suit('Hearts')
+        self.clubs = Suit('Clubs')
+        self.diamonds = Suit('Diamonds')
 
-    stopped = [True, False, False, False, False]
+        for card in data.split():
+            self[card[1]].append(card[0])
 
-    for card in hand.cards:
-        if is_face_card(card):
-            val = card_value(card)
-            required_cards = val - 3
-            if hand.suits[card_suit(card)] < required_cards:
-                val = val - 1
-            else:
-                if val > 1:
-                    stopped[card // 100] = True
-            score += val
+    def __getitem__(self, key):
+        if key == 'S':
+            return self.spades
+        elif key == 'H':
+            return self.hearts
+        elif key == 'C':
+            return self.clubs
+        elif key == 'D':
+            return self.diamonds
 
-    if score >= 16 and all(stopped):
-        return 'BID NO-TRUMP'
-
-    max_suit = CLUBS
-    max_num = hand.suits[CLUBS]
-    for suit in hand.suits:
-
-        if hand.suits[suit] >= max_num:
-            max_suit = suit
-
-        if hand.suits[suit] < 2:
-            score += 2
-        elif hand.suits[suit] == 2:
-            score += 1
-
-    if score < 14:
-        return 'PASS'
-    else:
-        return "BID %s" % SUIT_ABBREV[max_suit]
-
-
-def read_hand(line):
-    """Returns integer list representing hand."""
-    cards = sorted([SUITS[c[1]] + FACES[c[0]] for c in line.split()],
-                   reverse=True)
-    suits = Counter([c // 100 for c in cards])
-    return Hand(cards, suits)
+    def __repr__(self):
+        return "%s\n%s\n%s\n%s\n" % (self.spades, self.hearts,
+                                     self.clubs, self.diamonds)
 
 
 def main():
     """Main program."""
     for line in sys.stdin:
-        print(opening_bid(read_hand(line)))
+        hand = Hand(line)
 
 
 if __name__ == '__main__':
