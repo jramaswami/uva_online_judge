@@ -38,9 +38,6 @@ int main() {
             }
         }
 
-        if (caseNumber > 1) {
-            cout << endl;
-        }
         cout << "Case " << caseNumber << ":" << endl;
         for (size_t i = 0; i < intervals.size(); i++) {
             cout << "0" << intervals[i].first;
@@ -61,6 +58,7 @@ int main() {
             }
             cout << endl;
         }
+        cout << endl;
         cin >> numberCount;
         caseNumber++;
     }

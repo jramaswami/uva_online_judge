@@ -6,7 +6,8 @@ do
     if test -f "test$i.txt"; then
         echo "Running test $i ..."
         ./$exec < test$i.txt > output$i.txt
-        diff -w -s -B expected$i.txt output$i.txt
+        # diff -w -s -B expected$i.txt output$i.txt
+        diff -s expected$i.txt output$i.txt
     fi
 done
 
