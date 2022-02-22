@@ -1,0 +1,2 @@
+Position of player 1 is 100.
+Position of player 2 is 1.
