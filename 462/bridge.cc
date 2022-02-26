@@ -2,16 +2,17 @@
 // https://onlinejudge.org/external/4/462.pdf
 // jramaswami
 
+// Required high suit as choice of bid, even though instructions did not
+// mention that.
+
 #include <bits/stdc++.h>
 
 using namespace std;
-
 
 typedef bitset<20> suit_t;
 
 const int ACE{14}, KING{13}, QUEEN{12}, JACK{11}, TEN{10},
           CLUBS{0}, DIAMONDS{1}, HEARTS{2}, SPADES{3};
-
 
 class Hand {
         vector<suit_t> suits;
@@ -21,7 +22,6 @@ class Hand {
         const vector<string> bidMessage{"BID C", "BID D", "BID H", "BID S"};
 
         vector<int> suitCount{0, 0, 0, 0};
-        vector<size_t> suitHighCard{0, 0, 0, 0};
         bitset<4> stopped;
 
         size_t findSuitIndex(char suitFace) {
@@ -102,7 +102,6 @@ class Hand {
                 size_t suitIndex{findSuitIndex(line[i+1])};
                 suitCount[suitIndex]++;
                 suits[suitIndex].set(valIndex);
-                suitHighCard[suitIndex] = max(suitHighCard[suitIndex], valIndex);
                 i += 3;
             }
             scoreHand();
@@ -123,18 +122,10 @@ class Hand {
             if (faceScore + balanceScore >= 14) {
                 size_t highSuit{0};
                 int highCardCount{suitCount[0]};
-                size_t highCard{suitHighCard[0]};
                 for (size_t suitIndex{1}; suitIndex < 4; ++suitIndex) {
-                    if (suitCount[suitIndex] > highCardCount) {
+                    if (suitCount[suitIndex] >= highCardCount) {
                         highCardCount = suitCount[suitIndex];
-                        highCard = suitHighCard[suitIndex];
                         highSuit = suitIndex;
-                    } else if (suitCount[suitIndex] == highCardCount) {
-                        if (suitHighCard[suitIndex] >= highCard) {
-                            highCardCount = suitCount[suitIndex];
-                            highCard = suitHighCard[suitIndex];
-                            highSuit = suitIndex;
-                        }
                     }
                 }
                 return bidMessage[highSuit];

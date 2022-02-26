@@ -1,0 +1,3 @@
+BID H
+PASS
+BID C
