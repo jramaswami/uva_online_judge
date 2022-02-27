@@ -22,4 +22,3 @@ kecut kencit = kencti kecut
 ok i now donut = oknow uidot n
 pq = qp
 q = q
-

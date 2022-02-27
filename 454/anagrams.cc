@@ -41,8 +41,10 @@ int main() {
                 }
             }
         }
-        cout << endl;   // Blank line between testcases
         T--;
+        if (T) {
+            cout << endl;   // Blank line between testcases
+        }
     }
 
     return EXIT_SUCCESS;
