@@ -7,24 +7,41 @@
 using namespace std;
 
 struct Measurement {
-    string lhs;
-    string rhs;
-    string result;
+    bitset<12> heavy;
+    bitset<12> light;
+    bool isEven{false};
 
     Measurement(const string &line) {
-        // Find the first space.
         auto leftSpace = find(line.begin(), line.end(), ' ');
         auto rightSpace = find(leftSpace+1, line.end(), ' ');
-        lhs = string(line.begin(), leftSpace);
-        rhs = string(leftSpace+1, rightSpace);
-        result = string(rightSpace+1, line.end());
+        string lhs = string(line.begin(), leftSpace);
+        string rhs = string(leftSpace+1, rightSpace);
+        string result = string(rightSpace+1, line.end());
+        isEven = result == "even";
+        if (result == "down") {
+            swap(lhs, rhs);
+        }
+        for (auto c : lhs) { heavy.set(c-'A'); }
+        for (auto c : rhs) { light.set(c-'A'); }
     }
-
 };
 
-ostream& operator<<(ostream &os, const Measurement &measurement) {
-    os << "lhs=" << measurement.lhs << " rhs=" << measurement.rhs << " result=" << measurement.result;
+ostream& operator<<(ostream &os, const Measurement &m) {
+    if (m.isEven) {
+        os << "even  " << m.heavy << " even  " << m.light;
+    } else {
+        os << "heavy " << m.heavy << " light " << m.light;
+    }
     return os;
+}
+
+char whichCoin(bitset<12> bits) {
+    for (char i{0}; i < 12; ++i) {
+        if (bits.test(i)) {
+            return i + 'A';
+        }
+    }
+    return '!';
 }
 
 int main() {
@@ -36,56 +53,51 @@ int main() {
     cin >> T;
     string junk;
     getline(cin, junk);   // Read trailing newline.
-    while (T) {
-        // Each test case is three lines.
-        vector<Measurement> measurements;
+    for (int t{0}; t < T; ++t) {
+        // Read measurements.
+        cerr << "test " << t << endl;
         string line;
+        vector<Measurement> measurements;
         for (int i{0}; i < 3; i++) {
             getline(cin, line);
+            cerr << line << endl;
             measurements.emplace_back(line);
         }
-        vector<int> weight(128, 0);
+
+        bitset<12> heavy;
+        bitset<12> light;
+        bitset<12> even;
         for (auto m : measurements) {
-            if (m.result == "up") {
-                // Heavy side is on the left.
-                for (auto c : m.lhs) {
-                    weight[c] += 1;
-                }
-                for (auto c : m.rhs) {
-                    weight[c] -= 1;
-                }
-            } else if (m.result == "down") {
-                // Heavy side is on the right.
-                for (auto c : m.lhs) {
-                    weight[c] -= 1;
-                }
-                for (auto c : m.rhs) {
-                    weight[c] += 1;
-                }
-            }
-        }
-        for (auto m : measurements) {
-            if (m.result == "even") {
-                // These are all genuine.
-                for (auto c : m.lhs) {
-                    weight[c] = 0;
-                }
-                for (auto c : m.rhs) {
-                    weight[c] = 0;
-                }
+            if (m.isEven) {
+                even |= m.heavy;
+                even |= m.light;
+            } else {
+                heavy |= m.heavy;
+                light |= m.light;
             }
         }
 
-        copy(weight.begin() + 'A', weight.begin() + 'M', ostream_iterator<int>(cerr, " ")); cerr << endl;
-        for (char c{'A'}; c <= 'L'; ++c) {
-            if (weight[c] <= -1) {
-                cout << c << " is the counterfeit coin and it is light." << endl;
-            } else if (weight[c] >= 2) {
-                cout << c << " is the counterfeit coin and it is heavy." << endl;
+        for (auto m : measurements) {
+            // Remove all the even bits from heavy and light.
+            m.heavy &= (~even);
+            m.light &= (~even);
+            // Remove light bits from the heavy side.
+            m.heavy &= (~light);
+            // Remove heavy bits from the light side.
+            m.light &= (~heavy);
+            // The measurement with single bit set across both sides has the
+            // counterfeit coin.
+            cerr << m << endl;
+            if (m.heavy.none() && m.light.any()) {
+                cout << whichCoin(m.light) << " is the counterfeit coin and it is light." << endl;
+            } else if (m.heavy.any() && m.light.none()) {
+                cout << whichCoin(m.heavy) << " is the counterfeit coin and it is heavy." << endl;
             }
-
         }
-        --T;
+            cerr << "heavy " << heavy << endl;
+            cerr << "light " << light << endl;
+            cerr << "even " << even << endl;
+        cerr << endl;
     }
     return EXIT_SUCCESS;
 }
