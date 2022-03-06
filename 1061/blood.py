@@ -2,9 +2,6 @@
 UVA :: 1061 :: Consanguine Calculations
 https://onlinejudge.org/external/10/1061.pdf
 jramaswami
-
-
-TODO: Fix sorting!
 """
 
 
@@ -23,7 +20,9 @@ COMBINATIONS = [
     ('O-', 'OO--')
 ]
 
+
 ALL_ALLELES = list(sorted(set(a for _, a in COMBINATIONS)))
+
 
 def main():
     "Main program."
@@ -48,9 +47,6 @@ def main():
                         ]
                         yield "".join(callele)
 
-    def bt_key(bt):
-        return (len(bt), bt)
-
     case = 1
     while 1:
 
@@ -71,13 +67,15 @@ def main():
             for p1a in possible_alleles(parent1):
                 for p2a in ALL_ALLELES:
                     for ca in combine_alleles(p1a, p2a):
-                        # print(p1a, p2a, ca, list(possible_blood_types(ca)))
                         if child in possible_blood_types(ca):
                             result.update(possible_blood_types(p2a))
             parent2 = "IMPOSSIBLE"
             if result:
-                S = ", ".join(t for t in result)
-                parent2 = "{" + S + "}"
+                if len(result) > 1:
+                    S = ", ".join(t for t in result)
+                    parent2 = "{" + S + "}"
+                else:
+                    parent2 = "".join(t for t in result)
             if swapped:
                 parent1, parent2 = parent2, parent1
         else:
@@ -88,10 +86,13 @@ def main():
                         result.update(possible_blood_types(ca))
             child = "IMPOSSIBLE"
             if result:
-                S = ", ".join(t for t in result)
-                child = "{" + S + "}"
-        print(f"Case {case}: {parent1} {parent2} {child}")
+                if len(result) > 1:
+                    S = ", ".join(t for t in result)
+                    child = "{" + S + "}"
+                else:
+                    child = "".join(t for t in result)
 
+        print(f"Case {case}: {parent1} {parent2} {child}")
 
         case += 1
 
