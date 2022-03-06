@@ -1,0 +1,4 @@
+Case 1: O+ O- {O-, O+}
+Case 2: O+ {O-, O+, B-, B+, A-, A+} O-
+Case 3: AB- AB+ {AB-, AB+, B-, B+, A-, A+}
+Case 4: AB+ IMPOSSIBLE O+
