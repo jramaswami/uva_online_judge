@@ -45,10 +45,12 @@ struct Matrix {
         while (currIndex < targetIndex) {
             for (int i{0}; i < currSteps; ++i) {
                 move(OFFSETS[currDirn]);
+                if (currIndex == targetIndex) return {matrixSize-currRow, currCol+1};
             }
             currDirn = (currDirn + 1) % 4;
             for (int i{0}; i < currSteps; ++i) {
                 move(OFFSETS[currDirn]);
+                if (currIndex == targetIndex) return {matrixSize-currRow, currCol+1};
             }
             currDirn = (currDirn + 1) % 4;
             currSteps++;
