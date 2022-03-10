@@ -21,25 +21,23 @@ int main() {
 
         // Sum the corners.
         vector<int> cornerSums(V, 0);
-        for (int i{0}; i < V; ++i) {
-            for (int j{0}; j < V; ++j) {
-                // A pair is connected if there is a 1 bit difference.
-                bitset<16> connection(i ^ j);
-                if (connection.count() == 1) {
-                    cornerSums[i] += cornerVals[j];
-                }
+        for (int vertex{0}; vertex < V; ++vertex) {
+            for (int bit{0}; bit < N; ++bit) {
+                // Two vertices are connected if they differ by one bit.
+                int mask{1 << bit};
+                int neighbor{vertex ^ mask};
+                cornerSums[vertex] += cornerVals[neighbor];
             }
         }
 
         // Find the max pair of connected corners.
         int maxPair{0};
-        for (int i{0}; i < V; ++i) {
-            for (int j{0}; j < V; ++j) {
-                // A pair is connected if there is a 1 bit difference.
-                bitset<16> connection(i ^ j);
-                if (connection.count() == 1) {
-                    maxPair = max(maxPair, cornerSums[i] + cornerSums[j]);
-                }
+        for (int vertex{0}; vertex < V; ++vertex) {
+            for (int bit{0}; bit < N; ++bit) {
+                // Two vertices are connected if they differ by one bit.
+                int mask{1 << bit};
+                int neighbor{vertex ^ mask};
+                maxPair = max(maxPair, cornerSums[vertex] + cornerSums[neighbor]);
             }
         }
         cout << maxPair << endl;
