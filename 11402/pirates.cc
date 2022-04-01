@@ -7,154 +7,103 @@
 using namespace std;
 using number_t = unsigned long long int;
 
+const int OK{0};
 const int SET{1};
 const int CLEAR{2};
 const int FLIP{3};
+const size_t MAXN{1050000};
 
-struct SegmentTree {
-    size_t N{0};
-    vector<number_t> tree;
-    vector<vector<int>> lazy;
+vector<number_t> tree(2*(MAXN+1), 0);
+vector<int> lazy(2*(MAXN+1), 0);
 
-    SegmentTree(const vector<number_t> &A) {
-        N = A.size();
-        tree.resize(4 * N);
-        lazy.resize(4 * N);
-        fill(lazy.begin(), lazy.end(), vector<int>());
-        build(1, 0, N-1, A);
+// Return the next largest power of two.
+size_t nextPowOf2(size_t n) {
+    size_t p{1};
+    while (p < n) {
+        p <<= 1;
+    }
+    return p;
+}
+
+// Build tree.  Assumes that array values have been copied to bottom of tree.
+void buildTree(const vector<number_t> &A, size_t N) {
+    // Calculate padding.
+    // Clear any previous values in upper nodes.
+    fill(tree.begin(), tree.begin() + N, 0);
+    fill(lazy.begin(), lazy.begin() + N, 0);
+    // Copy leaf nodes.
+    copy(A.begin(), A.end(), tree.begin() + N);
+    // Populate upper nodes.
+    for (size_t v{N-1}; v >= 1; v--) {
+        tree[v] = tree[2*v] + tree[2*v+1];
+    }
+}
+
+// Apply given operation to node.
+void apply(size_t v, size_t sl, size_t sr, int op) {
+    switch(op) {
+        case SET:
+            tree[v] = sr - sl + 1;
+            break;
+        case CLEAR:
+            tree[v] = 0;
+            break;
+        case FLIP:
+            tree[v] = (sr - sl + 1) - tree[v];
+            break;
+    }
+    lazy[v] = op;
+}
+
+// Propogate an operation down until it reaches a node that has no pending
+// operations.
+void propagate(size_t v, size_t sl, size_t sr) {
+    if (sl == sr) {
+        return;
+    }
+    size_t sm = sl + ((sr - sl) / 2);
+    if (lazy[v] != OK) {
+        propagate(v*2, sl, sm);
+        propagate(v*2+1, sm+1, sr);
+        apply(v*2, sl, sm, lazy[v]);
+        apply(v*2+1, sm+1, sr, lazy[v]);
+
+    }
+    lazy[v] = OK;
+}
+
+
+void update(size_t v, size_t sl, size_t sr, size_t ql, size_t qr, int op) {
+    if (sr < ql || qr < sl) {
+        return;
     }
 
-    void build(size_t v, size_t sl, size_t sr, const vector<number_t> &A) {
-        // Leaf Node
-        if (sl == sr) {
-            tree[v] = A[sl];
-            return;
-        }
+    propagate(v, sl, sr);
 
-        // Not a leaf node.
-        size_t lc{v * 2};
-        size_t rc{lc + 1};
-        size_t sm{sl + ((sr - sl) / 2)};
-        build(lc, sl, sm, A);
-        build(rc, sm+1, sr, A);
-        tree[v] = tree[lc] + tree[rc];
-        assert(tree[v] <= (sr - sl) + 1);
+    if (ql <= sl && sr <= qr) {
+        apply(v, sl, sr, op);
+        return;
     }
 
-    void apply(size_t v, size_t sl, size_t sr) {
-        if (lazy[v].empty()) {
-            return;
-        }
+    size_t sm = sl + ((sr - sl) / 2);
+    update(2*v, sl, sm, ql, qr, op);
+    update(2*v+1, sm+1, sr, ql, qr, op);
+    tree[v] = tree[2*v] + tree[2*v+1];
+}
 
-        // Push changes down.
-        if (sl != sr) {
-            size_t lc{v * 2};
-            size_t rc{lc + 1};
-            copy(lazy[v].begin(), lazy[v].end(), back_inserter(lazy[lc]));
-            copy(lazy[v].begin(), lazy[v].end(), back_inserter(lazy[rc]));
-        }
-
-        // Apply changes to current node.
-        for (auto change : lazy[v]) {
-            switch(change) {
-                case SET:
-                    set(v, sl, sr);
-                    break;
-                case CLEAR:
-                    clear(v, sl, sr);
-                    break;
-                case FLIP:
-                    flip(v, sl, sr);
-                    break;
-            }
-        }
-
-        // Clear lazy changes.
-        lazy[v].clear();
+number_t query(size_t v, size_t sl, size_t sr, size_t ql, size_t qr) {
+    if (sr < ql || qr < sl) {
+        return 0;
     }
 
-    void flip(size_t v, size_t sl, size_t sr) {
-        tree[v] = (sr - sl + 1) - tree[v];
+    propagate(v, sl, sr);
+    if (ql <= sl && sr <= qr) {
+        return tree[v];
     }
 
-    void set(size_t v, size_t sl, size_t sr) {
-        tree[v] = (sr - sl + 1);
-    }
-
-    void clear(size_t v, size_t sl, size_t sr) {
-        tree[v] = 0;
-    }
-
-    size_t query(size_t v, size_t sl, size_t sr, size_t ql, size_t qr) {
-        apply(v, sl, sr);
-
-        // Disjoint.
-        if (sr < ql || qr < sl) {
-            return 0;
-        }
-
-        // Covered.
-        if (ql <= sl && sr <= qr) {
-            return tree[v];
-        }
-
-        // Do not know.
-        size_t lc{v * 2};
-        size_t rc{lc + 1};
-        size_t sm{sl + ((sr - sl) / 2)};
-        return query(lc, sl, sm, ql, qr) + query(rc, sm+1, sr, ql, qr);
-    }
-
-    void update(size_t v, size_t sl, size_t sr, size_t ql, size_t qr, int change) {
-        apply(v, sl, sr);
-
-        // Disjoint
-        if (sr < ql || qr < sl) {
-            return;
-        }
-
-
-        size_t lc{v * 2};
-        size_t rc{lc + 1};
-
-        // Covered
-        if (ql <= sl && sr <= qr) {
-            switch(change) {
-                case SET:
-                    set(v, sl, sr);
-                    break;
-                case CLEAR:
-                    clear(v, sl, sr);
-                    break;
-                case FLIP:
-                    flip(v, sl, sr);
-                    break;
-            }
-            if (sl != sr) {
-                lazy[lc].push_back(change);
-                lazy[rc].push_back(change);
-            }
-            return;
-        }
-
-        // Mixed.
-        size_t sm{sl + ((sr - sl) / 2)};
-        update(lc, sl, sm, ql, qr, change);
-        update(rc, sm+1, sr, ql, qr, change);
-        tree[v] = tree[lc] + tree[rc];
-        assert(tree[v] <= (sr - sl + 1));
-    }
-
-    size_t query(size_t ql, size_t qr) {
-        return query(1, 0, N-1, ql, qr);
-    }
-
-    void update(size_t ql, size_t qr, int change) {
-        update(1, 0, N-1, ql, qr, change);
-    }
-
-};
-
+    size_t sm = sl + ((sr - sl) / 2);
+    return query(2*v, sl, sm, ql, qr) + query(2*v+1, sm+1, sr, ql, qr);
+}
 
 int main() {
     ios_base::sync_with_stdio(false);
@@ -166,7 +115,7 @@ int main() {
     string line;
     for (size_t t{1}; t <= testCases; ++t) {
         cout << "Case " << t << ":" << endl;
-        vector<number_t> pirates;
+        vector<number_t> A;
         size_t M{0};
         cin >> M;
         for (size_t m{0}; m < M; ++m) {
@@ -178,15 +127,18 @@ int main() {
             for (size_t i{0}; i < T; ++i) {
                 for (size_t j{0}; j < line.size(); ++j) {
                     if (line.at(j) == '1') {
-                        pirates.push_back(1);
+                        A.push_back(1);
                     } else {
-                        pirates.push_back(0);
+                        A.push_back(0);
                     }
                 }
             }
         }
+
+        // Compute padding.
+        size_t N = nextPowOf2(A.size());
         // Construct segment tree.
-        SegmentTree st(pirates);
+        buildTree(A, N);
 
         // Read queries.
         size_t Q{0};
@@ -195,30 +147,30 @@ int main() {
         size_t qId{1};
         for (size_t q{1}; q <= Q; ++q) {
             getline(cin, line);
-            auto firstSpace = find(line.begin(), line.end(), ' ');
-            auto secondSpace = find(firstSpace+1, line.end(), ' ');
-            char queryType = line.at(0);
-            size_t qryLeft = static_cast<size_t>(stoi(string(firstSpace+1, secondSpace)));
-            size_t qryRight = static_cast<size_t>(stoi(string(secondSpace+1, line.end())));
-            switch (queryType) {
+            auto s1 = find(line.begin(), line.end(), ' ');
+            auto s2 = find(s1+1, line.end(), ' ');
+            char cmd = line.at(0);
+            size_t ql = static_cast<size_t>(stoi(string(s1+1, s2)));
+            size_t qr = static_cast<size_t>(stoi(string(s2+1, line.end())));
+            switch (cmd) {
                 case 'F':
-                    // Mutate [qryLeft, qryRight] to BUCANEER.
-                    st.update(qryLeft, qryRight, SET);
+                    // Mutate [ql, qr] to BUCANEER.
+                    update(1, 0, N-1, ql, qr, SET);
                     break;
 
                 case 'E':
-                    // Mutate [qryLeft, qryRight] to BARBARY.
-                    st.update(qryLeft, qryRight, CLEAR);
+                    // Mutate [ql, qr] to BARBARY.
+                    update(1, 0, N-1, ql, qr, CLEAR);
                     break;
 
                 case 'I':
-                    // Mutate [qryLeft, qryRight] to INVERSE.
-                    st.update(qryLeft, qryRight, FLIP);
+                    // Mutate [ql, qr] to INVERSE.
+                    update(1, 0, N-1, ql, qr, FLIP);
                     break;
 
                 case 'S':
-                    // How many BUCANEERs in [qryLeft, qryRight].
-                    auto result = st.query(qryLeft, qryRight);
+                    // How many BUCANEERs in [ql, qr].
+                    auto result = query(1, 0, N-1, ql, qr);
                     cout << "Q" << qId << ": " << result << endl;
                     qId++;
                     break;
