@@ -7,16 +7,22 @@
 using namespace std;
 using number_t = unsigned long long int;
 
-
-const int CLEAN{0};
-const int BUCANEER{1};
-const int BARBARY{2};
-const int INVERSE{3};
+const int SET{1};
+const int CLEAR{2};
+const int FLIP{3};
 
 struct SegmentTree {
     size_t N{0};
     vector<number_t> tree;
-    deque<int> dirty;
+    vector<vector<int>> lazy;
+
+    SegmentTree(const vector<number_t> &A) {
+        N = A.size();
+        tree.resize(4 * N);
+        lazy.resize(4 * N);
+        fill(lazy.begin(), lazy.end(), vector<int>());
+        build(1, 0, N-1, A);
+    }
 
     void build(size_t v, size_t sl, size_t sr, const vector<number_t> &A) {
         // Leaf Node
@@ -35,30 +41,53 @@ struct SegmentTree {
         assert(tree[v] <= (sr - sl) + 1);
     }
 
-    void invert(size_t v, size_t sl, size_t sr) {
+    void apply(size_t v, size_t sl, size_t sr) {
+        if (lazy[v].empty()) {
+            return;
+        }
+
+        // Push changes down.
+        if (sl != sr) {
+            size_t lc{v * 2};
+            size_t rc{lc + 1};
+            copy(lazy[v].begin(), lazy[v].end(), back_inserter(lazy[lc]));
+            copy(lazy[v].begin(), lazy[v].end(), back_inserter(lazy[rc]));
+        }
+
+        // Apply changes to current node.
+        for (auto change : lazy[v]) {
+            switch(change) {
+                case SET:
+                    set(v, sl, sr);
+                    break;
+                case CLEAR:
+                    clear(v, sl, sr);
+                    break;
+                case FLIP:
+                    flip(v, sl, sr);
+                    break;
+            }
+        }
+
+        // Clear lazy changes.
+        lazy[v].clear();
+    }
+
+    void flip(size_t v, size_t sl, size_t sr) {
         tree[v] = (sr - sl + 1) - tree[v];
     }
 
-    void makeBucaneer(size_t v, size_t sl, size_t sr) {
+    void set(size_t v, size_t sl, size_t sr) {
         tree[v] = (sr - sl + 1);
     }
 
-    void makeBarbary(size_t v, size_t sl, size_t sr) {
+    void clear(size_t v, size_t sl, size_t sr) {
         tree[v] = 0;
     }
 
-    void push(size_t v, size_t sl, size_t sr, int label) {
-        if (label == BUCANEER) {
-            makeBucaneer(v, sl, sr);
-        } else if (label == BARBARY) {
-            makeBarbary(v, sl, sr);
-        } else if (label == INVERSE) {
-            invert(v, sl, sr);
-        }
-        dirty[v] = label;
-    }
-
     size_t query(size_t v, size_t sl, size_t sr, size_t ql, size_t qr) {
+        apply(v, sl, sr);
+
         // Disjoint.
         if (sr < ql || qr < sl) {
             return 0;
@@ -73,65 +102,55 @@ struct SegmentTree {
         size_t lc{v * 2};
         size_t rc{lc + 1};
         size_t sm{sl + ((sr - sl) / 2)};
-        // If dirty, be sure to update next level of nodes.
-        if (dirty[v] != CLEAN) {
-            push(lc, sl, sm, dirty[v]);
-            push(rc, sm+1, sr, dirty[v]);
-            dirty[v] = CLEAN;
-        }
         return query(lc, sl, sm, ql, qr) + query(rc, sm+1, sr, ql, qr);
     }
 
-    void update(size_t v, size_t sl, size_t sr, size_t ql, size_t qr, int label) {
+    void update(size_t v, size_t sl, size_t sr, size_t ql, size_t qr, int change) {
+        apply(v, sl, sr);
+
         // Disjoint
         if (sr < ql || qr < sl) {
             return;
         }
 
+
+        size_t lc{v * 2};
+        size_t rc{lc + 1};
+
         // Covered
         if (ql <= sl && sr <= qr) {
-            // Segment is entirely covered by update.
-            if (label == BUCANEER) {
-                makeBucaneer(v, sl, sr);
-            } else if (label == BARBARY) {
-                makeBarbary(v, sl, sr);
-            } else if (label == INVERSE) {
-                invert(v, sl, sr);
+            switch(change) {
+                case SET:
+                    set(v, sl, sr);
+                    break;
+                case CLEAR:
+                    clear(v, sl, sr);
+                    break;
+                case FLIP:
+                    flip(v, sl, sr);
+                    break;
             }
-            dirty[v] = label;
+            if (sl != sr) {
+                lazy[lc].push_back(change);
+                lazy[rc].push_back(change);
+            }
             return;
         }
 
         // Mixed.
-        size_t lc{v * 2};
-        size_t rc{lc + 1};
         size_t sm{sl + ((sr - sl) / 2)};
-        // If dirty, be sure to update next level of nodes.
-        if (dirty[v] != CLEAN) {
-            push(lc, sl, sm, dirty[v]);
-            push(rc, sm+1, sr, dirty[v]);
-            dirty[v] = CLEAN;
-        }
-        update(lc, sl, sm, ql, qr, label);
-        update(rc, sm+1, sr, ql, qr, label);
+        update(lc, sl, sm, ql, qr, change);
+        update(rc, sm+1, sr, ql, qr, change);
         tree[v] = tree[lc] + tree[rc];
         assert(tree[v] <= (sr - sl + 1));
-    }
-
-    SegmentTree(const vector<number_t> &A) {
-        N = A.size();
-        tree.resize(4 * N);
-        dirty.resize(4 * N);
-        fill(dirty.begin(), dirty.end(), CLEAN);
-        build(1, 0, N-1, A);
     }
 
     size_t query(size_t ql, size_t qr) {
         return query(1, 0, N-1, ql, qr);
     }
 
-    void update(size_t ql, size_t qr, int label) {
-        update(1, 0, N-1, ql, qr, label);
+    void update(size_t ql, size_t qr, int change) {
+        update(1, 0, N-1, ql, qr, change);
     }
 
 };
@@ -181,21 +200,20 @@ int main() {
             char queryType = line.at(0);
             size_t qryLeft = static_cast<size_t>(stoi(string(firstSpace+1, secondSpace)));
             size_t qryRight = static_cast<size_t>(stoi(string(secondSpace+1, line.end())));
-            cerr << "Query " << queryType << " [" << qryLeft << ", " << qryRight << "]" << endl;
             switch (queryType) {
                 case 'F':
                     // Mutate [qryLeft, qryRight] to BUCANEER.
-                    st.update(qryLeft, qryRight, BUCANEER);
+                    st.update(qryLeft, qryRight, SET);
                     break;
 
                 case 'E':
                     // Mutate [qryLeft, qryRight] to BARBARY.
-                    st.update(qryLeft, qryRight, BARBARY);
+                    st.update(qryLeft, qryRight, CLEAR);
                     break;
 
                 case 'I':
                     // Mutate [qryLeft, qryRight] to INVERSE.
-                    st.update(qryLeft, qryRight, INVERSE);
+                    st.update(qryLeft, qryRight, FLIP);
                     break;
 
                 case 'S':
