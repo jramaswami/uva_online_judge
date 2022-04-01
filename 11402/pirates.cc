@@ -25,14 +25,32 @@ size_t nextPowOf2(size_t n) {
     return p;
 }
 
+int combineOps(int a, int b) {
+    // Second operation is FLIP.
+    if (b == FLIP) {
+        switch (a) {
+            case FLIP: return OK; break;
+            case SET: return CLEAR; break;
+            case CLEAR: return SET; break;
+            case OK: return FLIP; break;
+        }
+    }
+    return b;
+}
+
 // Build tree.  Assumes that array values have been copied to bottom of tree.
 void buildTree(const vector<number_t> &A, size_t N) {
     // Calculate padding.
     // Clear any previous values in upper nodes.
-    fill(tree.begin(), tree.begin() + N, 0);
-    fill(lazy.begin(), lazy.begin() + N, 0);
+    fill(lazy.begin(), lazy.begin() + (2 * N), 0);
     // Copy leaf nodes.
-    copy(A.begin(), A.end(), tree.begin() + N);
+    for (size_t i{0}; i < N; ++i) {
+        if (i < A.size()) {
+            tree[i+N] = A[i];
+        } else {
+            tree[i+N] = 0;
+        }
+    }
     // Populate upper nodes.
     for (size_t v{N-1}; v >= 1; v--) {
         tree[v] = tree[2*v] + tree[2*v+1];
@@ -40,8 +58,8 @@ void buildTree(const vector<number_t> &A, size_t N) {
 }
 
 // Apply given operation to node.
-void apply(size_t v, size_t sl, size_t sr, int op) {
-    switch(op) {
+void apply(size_t v, size_t sl, size_t sr) {
+    switch(lazy[v]) {
         case SET:
             tree[v] = sr - sl + 1;
             break;
@@ -52,36 +70,34 @@ void apply(size_t v, size_t sl, size_t sr, int op) {
             tree[v] = (sr - sl + 1) - tree[v];
             break;
     }
-    lazy[v] = op;
 }
 
 // Propogate an operation down until it reaches a node that has no pending
 // operations.
 void propagate(size_t v, size_t sl, size_t sr) {
-    if (sl == sr) {
-        return;
+    if (sl != sr) {
+        // Push down into children.
+        lazy[v*2] = combineOps(lazy[v*2], lazy[v]);
+        lazy[v*2+1] = combineOps(lazy[v*2+1], lazy[v]);
     }
-    size_t sm = sl + ((sr - sl) / 2);
-    if (lazy[v] != OK) {
-        propagate(v*2, sl, sm);
-        propagate(v*2+1, sm+1, sr);
-        apply(v*2, sl, sm, lazy[v]);
-        apply(v*2+1, sm+1, sr, lazy[v]);
-
-    }
-    lazy[v] = OK;
 }
 
-
 void update(size_t v, size_t sl, size_t sr, size_t ql, size_t qr, int op) {
+    if (lazy[v] != OK) {
+        apply(v, sl, sr);
+        propagate(v, sl, sr);
+        lazy[v] = OK;
+    }
+
     if (sr < ql || qr < sl) {
         return;
     }
 
-    propagate(v, sl, sr);
-
     if (ql <= sl && sr <= qr) {
-        apply(v, sl, sr, op);
+        lazy[v] = op;
+        apply(v, sl, sr);
+        propagate(v, sl, sr);
+        lazy[v] = OK;
         return;
     }
 
@@ -92,11 +108,16 @@ void update(size_t v, size_t sl, size_t sr, size_t ql, size_t qr, int op) {
 }
 
 number_t query(size_t v, size_t sl, size_t sr, size_t ql, size_t qr) {
+    if (lazy[v] != OK) {
+        apply(v, sl, sr);
+        propagate(v, sl, sr);
+        lazy[v] = OK;
+    }
+
     if (sr < ql || qr < sl) {
         return 0;
     }
 
-    propagate(v, sl, sr);
     if (ql <= sl && sr <= qr) {
         return tree[v];
     }
