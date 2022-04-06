@@ -6,39 +6,21 @@
 
 using namespace std;
 
-const int BAD{-1};
-
 struct Board {
     int N{0};
     int solns{0};
-    vector<vector<int>> board;
-    vector<int> queens;
+    vector<string> board;
+    bitset<30> negDiag;
+    bitset<30> posDiag;
+    bitset<14> row;
 
     Board(int n) {
         N = n;
-        board = vector<vector<int>>(N, vector<int>(N));
-        queens = vector<int>(N, -1);
+        board.reserve(N);
     }
 
-    void makeBad(int r, int c) {
-        board[r][c] = BAD;
-    }
-
-    void solve() {
-        solve(0);
-    }
-
-    bool valid(int r, int c) {
-        if (board[r][c] == BAD) {
-            return false;
-        }
-        for (int b{0}; b < c; ++b) {
-            int q = queens[b];
-            if (r == q || abs(r-q) == abs(c-b)) {
-                return false;
-            }
-        }
-        return true;
+    void addRow(string row) {
+        board.push_back(row);
     }
 
     void solve(int c) {
@@ -48,11 +30,21 @@ struct Board {
         }
 
         for (int r{0}; r < N; r++) {
-            if (valid(r, c)) {
-                queens[c] = r;
-                solve(c+1);
-                queens[c] = -1;
+            if (board[r][c] == '*') {
+                continue;
             }
+            if (row.test(r)) {
+                continue;
+            }
+            int nd{r - c + N - 1};
+            int pd{r + c};
+            if (negDiag.test(nd) || posDiag.test(pd)) {
+                continue;
+            }
+
+            row.set(r); negDiag.set(nd); posDiag.set(pd);
+            solve(c+1);
+            row.reset(r); negDiag.reset(nd); posDiag.reset(pd);
         }
     }
 };
@@ -62,21 +54,18 @@ int main() {
     cin.tie(nullptr);
 
     // Solution code.
-    int N{0}, C{1};;
+    int N{0}, C{1};
     cin >> N;
     string line;
     while (N) {
         getline(cin, line);  // Read trailing newline.
         Board board(N);
         for (int r{0}; r < N; ++r) {
-            getline(cin, line);
-            for (int c{0}; c < N; ++c) {
-                if (line.at(c) == '*') {
-                    board.makeBad(r, c);
-                }
-            }
+            string row;
+            getline(cin, row);
+            board.addRow(row);
         }
-        board.solve();
+        board.solve(0);
         cout << "Case " << C << ": " << board.solns << endl;
         cin >> N;
         C++;
