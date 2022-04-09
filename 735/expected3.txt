@@ -1,0 +1,223 @@
+THE SCORE OF 520 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 588 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 464 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 554 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 776 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 956 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 757 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 639 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 649 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 258 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 171 IS 3.
+NUMBER OF PERMUTATIONS THAT SCORES 171 IS 10.
+**********************************************************************
+THE SCORE OF 344 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 825 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 379 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 796 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 51 IS 152.
+NUMBER OF PERMUTATIONS THAT SCORES 51 IS 868.
+**********************************************************************
+THE SCORE OF 690 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 731 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 181 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 91 IS 140.
+NUMBER OF PERMUTATIONS THAT SCORES 91 IS 810.
+**********************************************************************
+THE SCORE OF 964 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 162 IS 7.
+NUMBER OF PERMUTATIONS THAT SCORES 162 IS 28.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 103 IS 102.
+NUMBER OF PERMUTATIONS THAT SCORES 103 IS 588.
+**********************************************************************
+THE SCORE OF 785 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 937 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 427 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 490 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 765 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 113 IS 70.
+NUMBER OF PERMUTATIONS THAT SCORES 113 IS 399.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 87 IS 154.
+NUMBER OF PERMUTATIONS THAT SCORES 87 IS 885.
+**********************************************************************
+THE SCORE OF 332 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 973 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 7 IS 8.
+NUMBER OF PERMUTATIONS THAT SCORES 7 IS 36.
+**********************************************************************
+THE SCORE OF 872 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 77 IS 174.
+NUMBER OF PERMUTATIONS THAT SCORES 77 IS 1008.
+**********************************************************************
+THE SCORE OF 296 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 452 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 282 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 933 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 52 IS 159.
+NUMBER OF PERMUTATIONS THAT SCORES 52 IS 888.
+**********************************************************************
+THE SCORE OF 750 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 68 IS 187.
+NUMBER OF PERMUTATIONS THAT SCORES 68 IS 1056.
+**********************************************************************
+THE SCORE OF 221 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 60 IS 180.
+NUMBER OF PERMUTATIONS THAT SCORES 60 IS 1009.
+**********************************************************************
+THE SCORE OF 432 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 312 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 157 IS 2.
+NUMBER OF PERMUTATIONS THAT SCORES 157 IS 9.
+**********************************************************************
+THE SCORE OF 351 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 774 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 124 IS 46.
+NUMBER OF PERMUTATIONS THAT SCORES 124 IS 246.
+**********************************************************************
+THE SCORE OF 346 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 975 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 789 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 826 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 179 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 29 IS 77.
+NUMBER OF PERMUTATIONS THAT SCORES 29 IS 426.
+**********************************************************************
+THE SCORE OF 535 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 929 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 28 IS 75.
+NUMBER OF PERMUTATIONS THAT SCORES 28 IS 405.
+**********************************************************************
+THE SCORE OF 467 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 331 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 471 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 981 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 372 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 265 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 3 IS 3.
+NUMBER OF PERMUTATIONS THAT SCORES 3 IS 10.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 35 IS 99.
+NUMBER OF PERMUTATIONS THAT SCORES 35 IS 555.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 151 IS 4.
+NUMBER OF PERMUTATIONS THAT SCORES 151 IS 21.
+**********************************************************************
+THE SCORE OF 725 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 447 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 970 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 593 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 866 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 460 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 383 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 595 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 711 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 924 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 580 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 759 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 839 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 377 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 293 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 149 IS 7.
+NUMBER OF PERMUTATIONS THAT SCORES 149 IS 42.
+**********************************************************************
+THE SCORE OF 415 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 314 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 223 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 177 IS 1.
+NUMBER OF PERMUTATIONS THAT SCORES 177 IS 3.
+**********************************************************************
+THE SCORE OF 255 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 973 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 687 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 870 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 719 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 984 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 241 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 344 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 579 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+THE SCORE OF 657 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+NUMBER OF COMBINATIONS THAT SCORES 157 IS 2.
+NUMBER OF PERMUTATIONS THAT SCORES 157 IS 9.
+**********************************************************************
+THE SCORE OF 290 CANNOT BE MADE WITH THREE DARTS.
+**********************************************************************
+END OF OUTPUT
