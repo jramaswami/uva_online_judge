@@ -5,24 +5,25 @@
 #include <bits/stdc++.h>
 
 using namespace std;
+using number_t = long long int;
 
-const int INF{INT_MAX};
+const number_t INF{LLONG_MAX};
 
 int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
 
     // Solution code.
-    int N{0}, caseNo{1};
+    number_t N{0}, caseNo{1};
     cin >> N;
     while (N) {
-        set<int> A;
+        set<number_t> A;
         for (int i{0}; i < N; ++i) {
-            int x{0};
+            number_t x{0};
             cin >> x;
             A.insert(x);
         }
-        set<int> S;
+        set<number_t> S;
         for (auto i = A.begin(); i != A.end(); ++i) {
             for (auto j = next(i); j != A.end(); ++j) {
                 S.insert((*i) + (*j));
@@ -32,10 +33,10 @@ int main() {
         int Q{0};
         cin >> Q;
         for (int q{0}; q < Q; ++q) {
-            int k{0};
+            number_t k{0};
             cin >> k;
             auto it = S.upper_bound(k);
-            int x{INF}, y{INF};
+            number_t x{INF}, y{INF};
             if (it != S.end()) {
                 y = *(it);
             }
@@ -43,7 +44,7 @@ int main() {
                 it--;
                 x = *(it);
             }
-            int dx{abs(x - k)}, dy{(y - k)}, soln{0};
+            number_t dx{abs(x - k)}, dy{(y - k)}, soln{0};
             if (dy < dx) {
                 soln = y;
             } else {
