@@ -16,13 +16,16 @@ int main() {
     int N{0}, caseNo{1};
     cin >> N;
     while (N) {
-        vector<int> A;
-        A.reserve(N);
-        copy_n(istream_iterator<int>(cin), N, back_inserter(A));
-        set<int> S;
+        set<int> A;
         for (int i{0}; i < N; ++i) {
-            for (int j{i+1}; j < N; ++j) {
-                S.insert(A[i] + A[j]);
+            int x{0};
+            cin >> x;
+            A.insert(x);
+        }
+        set<int> S;
+        for (auto i = A.begin(); i != A.end(); ++i) {
+            for (auto j = next(i); j != A.end(); ++j) {
+                S.insert((*i) + (*j));
             }
         }
         cout << "Case " << caseNo << ":" << endl;
