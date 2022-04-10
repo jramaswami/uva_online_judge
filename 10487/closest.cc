@@ -7,8 +7,6 @@
 using namespace std;
 using number_t = long long int;
 
-const number_t INF{LLONG_MAX};
-
 int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -17,38 +15,40 @@ int main() {
     number_t N{0}, caseNo{1};
     cin >> N;
     while (N) {
-        set<number_t> A;
+        cout << "Case " << caseNo << ":" << endl;
+        vector<number_t> A;
+        copy_n(istream_iterator<number_t>(cin), N, back_inserter(A));
+        vector<number_t> S;
         for (int i{0}; i < N; ++i) {
-            number_t x{0};
-            cin >> x;
-            A.insert(x);
-        }
-        set<number_t> S;
-        for (auto i = A.begin(); i != A.end(); ++i) {
-            for (auto j = next(i); j != A.end(); ++j) {
-                S.insert((*i) + (*j));
+            for (int j{i+1}; j < N; ++j) {
+                S.push_back(A[i] + A[j]);
             }
         }
-        cout << "Case " << caseNo << ":" << endl;
+        // Sort and remove duplicates.
+        sort(S.begin(), S.end());
+        auto it = unique(S.begin(), S.end());
+        S.resize(distance(S.begin(), it));
+
         int Q{0};
         cin >> Q;
         for (int q{0}; q < Q; ++q) {
-            number_t k{0};
+            number_t k{0}, soln{0};
             cin >> k;
-            auto it = S.upper_bound(k);
-            number_t x{INF}, y{INF};
-            if (it != S.end()) {
-                y = *(it);
-            }
-            if (it != S.begin()) {
-                it--;
-                x = *(it);
-            }
-            number_t dx{abs(x - k)}, dy{(y - k)}, soln{0};
-            if (dy < dx) {
-                soln = y;
+            it = upper_bound(S.begin(), S.end(), k);
+            if (it == S.begin()) {
+                soln = (*it);
+            } else if (it == S.end()) {
+                auto jt = prev(it);
+                soln = (*jt);
             } else {
-                soln = x;
+                auto jt = prev(it);
+                number_t x = (*it);
+                number_t y = (*jt);
+                if (abs(x - k) < abs(y - k)) {
+                    soln = x;
+                } else {
+                    soln = y;
+                }
             }
             cout << "Closest sum to " << k << " is " << soln << "." << endl;
         }
