@@ -14,24 +14,62 @@ struct Area {
     Area(number_t _r, number_t _c, number_t _p): r{_r}, c{_c}, pop{_p} {}
 };
 
-/*
-pair<int, int> iToRC(number_t i) {
-    number_t r{i / 5};
-    number_t c{i % 5};
-    return make_pair(r, c);
-}
 
-int rcToI(number_t r, number_t c) {
-    return (5 * r) + c;
-}
-*/
+struct Solver {
+    vector<Area> areas;
+    vector<number_t> candidate;
+    vector<number_t> soln;
+    number_t minDist{LLONG_MAX};
 
-number_t computeDistance(Area area, number_t index) {
-    number_t r{index / 5};
-    number_t c{index % 5};
-    number_t dist{abs(area.r - r) + abs(area.c - c) * area.pop};
-    return dist;
-}
+    Solver(const vector<Area> a) {
+        candidate = vector<number_t>(5, 0);
+        soln = vector<number_t>(5, 26);
+        areas = a;
+    }
+
+    number_t closestOffice(Area area) {
+        number_t d{LLONG_MAX};
+        for (auto i : candidate) {
+            number_t r{i / 5};
+            number_t c{i % 5};
+            number_t x{area.pop * (abs(area.r - r) + abs(area.c - c))};
+            d = min(d, x);
+        }
+        return d;
+    }
+
+    number_t computeTotalDistance() {
+        number_t t{0};
+        for (auto area : areas) {
+            t += closestOffice(area);
+        }
+        return t;
+    }
+
+    void solve(size_t index) {
+        if (index < candidate.size()) {
+            number_t init{0};
+            if (index > 0) {
+                init = candidate[index - 1] + 1;
+            }
+            for (number_t a{init}; a < 25; ++a) {
+                candidate[index] = a;
+                solve(index + 1);
+            }
+        } else {
+            number_t d = computeTotalDistance();
+            if (d < minDist) {
+                minDist = d;
+                copy(candidate.begin(), candidate.end(), soln.begin());
+            }
+        }
+    }
+
+    vector<number_t> solve() {
+        solve(0);
+        return soln;
+    }
+};
 
 int main() {
     ios_base::sync_with_stdio(false);
@@ -52,43 +90,8 @@ int main() {
             areas.emplace_back(r, c, p);
         }
 
-        vector<number_t> soln(5, 26);
-        number_t minDist{LLONG_MAX};
-        for (number_t a{0}; a < 25; ++a) {
-            for (number_t b{a+1}; b < 25; ++b) {
-                for (number_t c{b+1}; c < 25; ++c) {
-                    for (number_t d{c+1}; d < 25; ++d) {
-                        for (number_t e{d+1}; e < 25; ++e) {
-                            vector<number_t> candidate{a, b, c, d, e};
-                            number_t totalDist{0};
-                            for (auto area : areas) {
-                                vector<number_t> dists(5, 0);
-                                transform(
-                                    candidate.begin(), candidate.end(),
-                                    dists.begin(),
-                                    [&area](number_t i) {
-                                        return computeDistance(area, i);
-                                    }
-                                );
-                                auto it = min_element(dists.begin(), dists.end());
-                                totalDist += (*it);
-                            }
-                            if (totalDist < minDist) {
-                                minDist = totalDist;
-                                soln = candidate;
-                            } else if (totalDist == minDist) {
-                                if (lexicographical_compare(
-                                    candidate.begin(), candidate.end(),
-                                    soln.begin(), soln.end()
-                                )) {
-                                    soln = candidate;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        Solver solver(areas);
+        auto soln = solver.solve();
         for (int i{0}; i < 5; ++i) {
             cout << soln[i];
             if (i < 4) {
