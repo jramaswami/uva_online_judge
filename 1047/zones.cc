@@ -6,6 +6,13 @@
 
 using namespace std;
 
+int nCk(int n, int k) {
+    double res = 1;
+    for (int i = 1; i <= k; ++i)
+        res = res * (n - k + i) / i;
+    return (int)(res + 0.01);
+}
+
 // Choose the towers such that choices including tower 1 are preferable. If
 // this rule still leaves room for more than one solution, solutions including
 // tower 2 are preferable, and so on
@@ -20,38 +27,33 @@ int chooseTowers(int left, int right) {
 }
 
 int computeCustomersServed(int towers, vector<int> towerCustomers, vector<pair<int, int>> overlappingZones) {
-    cerr << "computing " << bitset<20>(towers) << endl;
     // Inclusion/exclusion principle.
     int total{0};
+    int N{0};
     // First get the sum of towerCustomers[i] where i is in towers.
     for (size_t i{0}; i < towerCustomers.size(); ++i) {
         int mask = 1 << i;
         if (towers & mask) {
             total += towerCustomers[i];
         }
+        N++;
     }
 
-    // Now, add/subtract overlapping zones.
-    for (auto overlap : overlappingZones) {
-        int subset = overlap.first & towers;
-        if (subset == towers) {
-            continue;
-        }
-        int k = __builtin_popcount(subset);
-        // k will tell you how many times this has already been counted.
-        // Check for overflow.
-        if (k > 1) {
-            cerr << "overlap " << bitset<20>(overlap.first) << endl;
-            if (k % 2) {
-                cerr << bitset<20>(subset) << "+" << overlap.second << endl;
-                total += overlap.second;
-            } else {
-                cerr << bitset<20>(subset) << "-" << overlap.second << endl;
-                total -= overlap.second;
+    for (int i{2}; i <= N; ++i) {
+        for (auto oz : overlappingZones) {
+            int subset = towers & oz.first;
+            int k = __builtin_popcount(subset);
+            if (k >= i) {
+                int t = nCk(k, i);
+                if (i % 2) {
+                    total += (oz.second * t);
+                } else {
+                    total -= (oz.second * t);
+                }
             }
         }
     }
-    cerr << "total=" << total << endl;
+
     return total;
 }
 
@@ -88,7 +90,6 @@ int main() {
         }
 
         // Compute solution.
-        cerr << "planned " << planned << " build " << built << endl;
         int limit = (1 << (planned));
         int maxCustomers{0};
         int maxTowers{0};
@@ -96,11 +97,9 @@ int main() {
             if (__builtin_popcount(towers) != built) {
                 continue;
             }
-            cerr << "popcount " << __builtin_popcount(towers) << endl;
             int customers = computeCustomersServed(
                                 towers, towerCustomers, overlappingZones
             );
-            cerr << bitset<20>(towers) << " " << customers << endl;
             if (customers > maxCustomers) {
                 maxCustomers = customers;
                 maxTowers = towers;
@@ -123,12 +122,9 @@ int main() {
                 }
             }
         }
-        cout << endl;
+        cout << endl << endl;
 
         cin >> planned >> built;
-        if (planned || built) {
-            cout << endl;
-        }
         caseNo++;
     }
     return EXIT_SUCCESS;
