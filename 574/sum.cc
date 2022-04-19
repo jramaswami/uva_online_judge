@@ -5,7 +5,7 @@
 #include <bits/stdc++.h>
 
 using namespace std;
-const int MAXN{100};
+const int MAXN{1000};
 
 struct Solver {
     vector<int> acc;
@@ -26,15 +26,14 @@ struct Solver {
         cerr << "], " << target << " ...)" << endl;
         */
 
-        if (sum == target) {
+        if (!acc.empty() && sum == target) {
             copy(acc.begin(), acc.end()-1, ostream_iterator<int>(cout, "+"));
             cout << acc.back() << endl;
             solns++;
-            return;
         }
 
         int start = (acc.empty() ? MAXN : acc.back());
-        for (int i{start}; i > 0; --i) {
+        for (int i{start}; i >= 0; --i) {
             if (freqs[i] > 0 && sum + i <= target) {
                 freqs[i]--;
                 acc.push_back(i);
