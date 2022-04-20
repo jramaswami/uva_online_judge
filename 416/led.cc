@@ -9,71 +9,66 @@ using namespace std;
 
 
 struct Solver {
-    vector<bitset<7>> readings;
+    vector<string> readings;
     int readingCount{0};
 
-    const vector<bitset<7>> DIGIT_LIGHTS {
-        bitset<7>("1111110"),  // 0
-        bitset<7>("0110000"),  // 1
-        bitset<7>("1101101"),  // 2
-        bitset<7>("1111001"),  // 3
-        bitset<7>("0110011"),  // 4
-        bitset<7>("1011011"),  // 5
-        bitset<7>("1011111"),  // 6
-        bitset<7>("1110000"),  // 7
-        bitset<7>("1111111"),  // 8
-        bitset<7>("1111011")   // 9
+    const vector<string> DIGIT_LIGHTS {
+        "YYYYYYN", // 0
+        "NYYNNNN", // 1
+        "YYNYYNY", // 2
+        "YYYYNNY", // 3
+        "NYYNNYY", // 4
+        "YNYYNYY", // 5
+        "YNYYYYY", // 6
+        "YYYNNNN", // 7
+        "YYYYYYY", // 8
+        "YYYYNYY"  // 9
     };
 
     Solver(int r) {
         readingCount = r;
-        readings = vector<bitset<7>>(r);
+        readings = vector<string>(r);
     }
 
-    bool couldBe(int d, int i, bitset<7> prevBurntOut) {
-        cerr << "couldBe(" << d << "[" << DIGIT_LIGHTS[d] << "], " << readings[i] << ", " << prevBurntOut << ")" << endl;
-        auto digits = DIGIT_LIGHTS[d];
+    bool couldBe(int d, int i, string &working) {
+        auto digit = DIGIT_LIGHTS[d];
         auto reading = readings[i];
         // Digit could be reading as long as:
         // (1) There are no lights lit that are not part of the digit.
-        for (int b{0}; b < 7; ++b) {
-            if (reading.test(b)) {
-                if (digits.test(b)) {
-                    // OK
-                } else {
-                    cerr << "cannot be " << d << " b/c " << b << " bit disagrees." << endl;
-                    return false;
-                }
+        for (int j{0}; j < 7; ++j) {
+            if (reading[j] == 'Y' && digit[j] == 'N') {
+                return false;
             }
         }
-        // (2) There are not lights lit that are considered burnt out.
-        for (int b{0}; b < 7; ++b) {
-            if (prevBurntOut.test(b)) {
-                if (reading.test(b)) {
-                    cerr << "cannot be " << d << " b/c " << b << " bit not burnt." << endl;
-                    return false;
-                }
+        // (2) There are not lights lit that are considered not working.
+        for (int j{0}; j < 7; ++j) {
+            if (reading[j] == 'Y' && working[j] == 'N') {
+                return false;
             }
         }
         return true;
     }
 
-    bitset<7> nextBurntOut(int d, int i, bitset<7> prevBurntOut) {
+    void stillWorking(int d, int i, string &working) {
         // Lights that are considered burnt out are those in digit that were
         // not in the test reading in addition to those that are already
         // considered burnt out.
-        return (DIGIT_LIGHTS[d] ^ readings[i]) | prevBurntOut;
+        auto digit = DIGIT_LIGHTS[d];
+        auto reading = readings[i];
+        for (int j{0}; j < 7; ++j) {
+            if (digit[j] == 'Y' && reading[j] == 'N') {
+                working[j] = 'N';
+            }
+        }
     }
 
     bool testCountDown(int n) {
-        cerr << "testCountDown(" << n << ")" << endl;
-        bitset<7> prevBurntOut;
+        string working(7, 'Y');
         for (int i{0}; i < readingCount; ++i) {
-            if (couldBe(n, i, prevBurntOut)) {
-                prevBurntOut = nextBurntOut(n, i, prevBurntOut);
+            if (couldBe(n, i, working)) {
+                stillWorking(n, i, working);
                 n--;
             } else {
-                cerr << "fails at " << n << endl;
                 return false;
             }
         }
@@ -83,7 +78,6 @@ struct Solver {
     bool solve() {
         for (int start{9}; start + 1 >= readingCount; --start) {
             if (testCountDown(start)) {
-                cerr << "CountDown starting at " << start << " OK" << endl;
                 return true;
             }
         }
@@ -104,12 +98,7 @@ int main() {
         getline(cin, line); // Read trailing newline.
         Solver solver(readingCount);
         for (int i{0}; i < readingCount; ++i) {
-            getline(cin, line);
-            for (int j{0}; j < 7; ++j) {
-                if (line.at(j) == 'Y') {
-                    solver.readings[i].set(j);
-                }
-            }
+            getline(cin, solver.readings[i]);
         }
         if (solver.solve()) {
             cout << "MATCH" << endl;
