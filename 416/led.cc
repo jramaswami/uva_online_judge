@@ -10,7 +10,6 @@ using namespace std;
 
 struct Solver {
     vector<bitset<7>> readings;
-    vector<int> acc;
     int readingCount{0};
 
     const vector<bitset<7>> DIGIT_LIGHTS {
@@ -66,41 +65,29 @@ struct Solver {
         return (DIGIT_LIGHTS[d] ^ readings[i]) | prevBurntOut;
     }
 
-    bool solve(int i, bitset<7> prevBurntOut) {
-        cerr << "solve(" << i << ", " << prevBurntOut << ")" << endl;
-        copy(acc.begin(), acc.end(), ostream_iterator<int>(cerr, " "));
-        cerr << endl;
-
-        if (i >= readingCount) {
-            // Base case
-            copy(acc.begin(), acc.end(), ostream_iterator<int>(cerr, " "));
-            cerr << endl;
-            return true;
-        } else if (i == 0) {
-            for (int d{9}; d >= 0; --d) {
-                if (couldBe(d, i, prevBurntOut)) {
-                    acc.push_back(d);
-                    if (solve(i+1, nextBurntOut(d, i, prevBurntOut))) {
-                        return true;
-                    }
-                    acc.pop_back();
-                }
-            }
-        } else {
-            if (couldBe(acc.back()-1, i, prevBurntOut)) {
-                acc.push_back(acc.back()-1);
-                if (solve(i+1, nextBurntOut(acc.back(), i, prevBurntOut))) {
-                    return true;
-                }
-                acc.pop_back();
+    bool testCountDown(int n) {
+        cerr << "testCountDown(" << n << ")" << endl;
+        bitset<7> prevBurntOut;
+        for (int i{0}; i < readingCount; ++i) {
+            if (couldBe(n, i, prevBurntOut)) {
+                prevBurntOut = nextBurntOut(n, i, prevBurntOut);
+                n--;
+            } else {
+                cerr << "fails at " << n << endl;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     bool solve() {
-        bitset<7> prevBurntOut;
-        return solve(0, prevBurntOut);
+        for (int start{9}; start + 1 >= readingCount; --start) {
+            if (testCountDown(start)) {
+                cerr << "CountDown starting at " << start << " OK" << endl;
+                return true;
+            }
+        }
+        return false;
     }
 };
 
