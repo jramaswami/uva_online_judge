@@ -5,11 +5,12 @@
 #include <bits/stdc++.h>
 
 using namespace std;
+using number_t = long long int;
 
-bool canClimb(int k, const vector<int> &rungHeights) {
-    int prevHeight{0};
+bool canClimb(number_t k, const vector<number_t> &rungHeights) {
+    number_t prevHeight{0};
     for (auto rungHeight : rungHeights) {
-        int dist{rungHeight - prevHeight};
+        number_t dist{rungHeight - prevHeight};
         if (k < dist) {
             return false;
         } else if (k == dist) {
@@ -30,14 +31,14 @@ int main() {
     for (int t{1}; t <= testCases; ++t) {
         int rungCount{0};
         cin >> rungCount;
-        vector<int> rungHeights;
+        vector<number_t> rungHeights;
         rungHeights.reserve(rungCount);
-        copy_n(istream_iterator<int>(cin), rungCount, back_inserter(rungHeights));
+        copy_n(istream_iterator<number_t>(cin), rungCount, back_inserter(rungHeights));
         // Binary search for the answer.
-        int lo{0}, hi{accumulate(rungHeights.begin(), rungHeights.end(), 0)};
-        int soln{INT_MAX};
+        number_t lo{0}, hi{accumulate(rungHeights.begin(), rungHeights.end(), 0)};
+        number_t soln{LLONG_MAX};
         while (lo <= hi) {
-            int k{lo + ((hi - lo) / 2)};
+            number_t k{lo + ((hi - lo) / 2)};
             if (canClimb(k, rungHeights)) {
                 soln = min(soln, k);
                 hi = k - 1;
