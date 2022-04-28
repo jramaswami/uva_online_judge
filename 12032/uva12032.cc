@@ -35,10 +35,14 @@ int main() {
         rungHeights.reserve(rungCount);
         copy_n(istream_iterator<number_t>(cin), rungCount, back_inserter(rungHeights));
         // Binary search for the answer.
+        // This is where the mistake is: accumulate is causing an overflow.
+        // hi should be the maximum distance rung, which is rungHeight.back().
         number_t lo{0}, hi{accumulate(rungHeights.begin(), rungHeights.end(), 0)};
-        number_t soln{LLONG_MAX};
+        cerr << "lo=" << lo << " hi=" << hi << endl;
+        number_t soln{hi};
         while (lo <= hi) {
             number_t k{lo + ((hi - lo) / 2)};
+            cerr << "lo=" << lo << " hi=" << hi << " k=" << k << endl;
             if (canClimb(k, rungHeights)) {
                 soln = min(soln, k);
                 hi = k - 1;
