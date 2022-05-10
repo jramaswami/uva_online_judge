@@ -1,11 +1,8 @@
 problem = uva787
 
-all: clean $(problem) test
+all: clean test
 
-$(problem): $(problem).cc
-	g++ -pedantic -std=c++11 -Wall -O2 -Wextra -Wfloat-equal -Wconversion -fsanitize=address $(problem).cc -o $(problem)
-
-test: $(problem)
+test:
 	bash test.sh
 
 clean:
