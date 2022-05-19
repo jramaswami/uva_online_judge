@@ -69,6 +69,10 @@ struct Solver {
                                 solnArea = area;
                                 solnCost = cost;
                             }
+                        } else {
+                            // If we have exceeded the possible cost, we
+                            // should not try to extend our rectangel.
+                            break;
                         }
                     }
                 }
