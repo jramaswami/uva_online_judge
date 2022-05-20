@@ -26,54 +26,43 @@ struct Solver {
         }
     }
 
-    number_t getPrefix(int r, int c) {
-        if (r < 0 || c < 0) {
-            return 0LL;
-        }
-        return prefix[r][c];
-    }
-
     void precompute() {
         for (int r{0}; r < N; ++r) {
-            for (int c{0}; c < M; ++c) {
-                prefix[r][c] = (
-                    getPrefix(r-1, c) +
-                    getPrefix(r, c-1) -
-                    getPrefix(r-1, c-1) +
-                    matrix[r][c]
-                );
-            }
+            partial_sum(matrix[r].begin(), matrix[r].end(), prefix[r].begin());
         }
     }
 
-    number_t getSum(int r1, int c1, int r2, int c2) {
-        return (
-            getPrefix(r2, c2) -
-            getPrefix(r1-1, c2) -
-            getPrefix(r2, c1-1) +
-            getPrefix(r1-1, c1-1)
-        );
+    number_t getSum(int row, int left, int right) {
+        if (left - 1 < 0) {
+            return prefix[row][right];
+        } else {
+            return prefix[row][right] - prefix[row][left-1];
+        }
     }
 
     void solve() {
-        for (int r1{0}; r1 < N; ++r1) {
-            for (int r2{r1}; r2 < N; ++r2) {
-                for (int c1{0}; c1 < M; ++c1) {
-                    for(int c2{0}; c2 < M; ++c2) {
-                        number_t cost = getSum(r1, c1, r2, c2);
-                        if (cost <= K) {
-                            int area = (r2 - r1 + 1) * (c2 - c1 + 1);
-                            if (area == solnArea) {
-                                solnCost = min(solnCost, cost);
-                            } else if (area > solnArea) {
-                                solnArea = area;
-                                solnCost = cost;
-                            }
-                        } else {
-                            // If we have exceeded the possible cost, we
-                            // should not try to extend our rectangel.
-                            break;
-                        }
+        deque<number_t> window;
+        number_t currCost{0};
+        for (int left{0}; left < M; ++left) {
+            for (int right{left}; right < M; ++right) {
+                int width{right - left + 1};
+                window.clear();
+                currCost = 0;
+                for (int row{0}; row < N; ++row) {
+                    number_t rowCost{getSum(row, left, right)};
+                    currCost += rowCost;
+                    window.push_back(rowCost);
+                    while (currCost > K) {
+                        currCost -= window.front();
+                        window.pop_front();
+                    }
+                    int height = static_cast<int>(window.size());
+                    int currArea = width * height;
+                    if (currArea == solnArea) {
+                        solnCost = min(solnCost, currCost);
+                    } else if (currArea > solnArea) {
+                        solnCost = currCost;
+                        solnArea = currArea;
                     }
                 }
             }
