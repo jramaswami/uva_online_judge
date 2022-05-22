@@ -16,33 +16,36 @@ int main() {
     while (cin >> n) {
         nums.push_back(n);
     }
-    // LIS
+    // LIS - O(n lg n) using binary search.
     int N{static_cast<int>(nums.size())};
-    vector<int> dp(nums.size(), 0);
-    vector<int> prev(nums.size(), -1);
-    pair<int, int> soln;
-    for (int right{0}; right < N; ++right) {
-        dp[right] = 1;
-        prev[right] = -1;
-        for (int left{0}; left < right; ++left) {
-            if (nums[left] < nums[right]) {
-                if (dp[right] <= 1 + dp[left]) {
-                    dp[right] = 1 + dp[left];
-                    prev[right] = left;
-                }
-            }
+    vector<int> dpValues{nums[0]};
+    vector<int> dpIndexes{0};
+    vector<int> prevIndexes(nums.size(), -1);
+    for (int i{1}; i < N; ++i) {
+        if (nums[i] > dpValues.back()) {
+            prevIndexes[i] = dpIndexes.back();
+            dpValues.push_back(nums[i]);
+            dpIndexes.push_back(i);
+        } else {
+            auto it = lower_bound(dpValues.begin(), dpValues.end(), nums[i]);
+            int delta{static_cast<int>(distance(dpValues.begin(), it))};
+            dpValues[delta] = nums[i];
+            dpIndexes[delta] = i;
+            prevIndexes[i] = (delta > 0 ? dpIndexes[delta-1] : -1);
         }
-        soln = max(soln, {dp[right], right});
     }
-    cout << soln.first << "\n" << "-" << "\n";
+    // Reconstruct path.
     vector<int> path;
-    int curr{soln.second};
+    int curr{dpIndexes.back()};
     while (curr >= 0) {
         path.push_back(nums[curr]);
-        curr = prev[curr];
+        curr = prevIndexes[curr];
     }
-    for (auto it = path.crbegin(); it != path.crend(); ++it) {
-        cout << (*it) << "\n";
+    // Print solution.
+    cout << dpValues.size() << "\n-\n";
+    for (auto rit = path.crbegin(); rit != path.crend(); ++rit) {
+        cout << (*rit) << "\n";
     }
+
     return EXIT_SUCCESS;
 }
