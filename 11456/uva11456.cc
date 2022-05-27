@@ -6,78 +6,37 @@
 
 using namespace std;
 
-int first_gte(int x, const vector<int> &A) {
-    int result{static_cast<int>(A.size())};
-    int lo{0};
-    int hi{result - 1};
-    while (lo <= hi) {
-        int mid{lo + ((hi - lo) / 2)};
-        if (A[mid] >= x) {
-            result = min(result, mid);
-            hi = mid - 1;
-        } else {
-            lo = mid + 1;
+
+int computeBest(int start, const vector<int> &trains, int N) {
+    vector<int> lis{};
+    vector<int> lds{};
+
+    for (int i{start+1}; i < N; ++i) {
+        if (trains[i] > trains[start]) {
+            if (lis.empty() || trains[i] > lis.back()) {
+                lis.push_back(trains[i]);
+            } else {
+                auto it = lower_bound(lis.begin(), lis.end(), trains[i]);
+                (*it) = trains[i];
+            }
+        }
+
+        if (trains[i] < trains[start]) {
+            if (lds.empty() || trains[i] < lds.back()) {
+                lds.push_back(trains[i]);
+            } else {
+                auto it = lower_bound(lds.begin(), lds.end(), trains[i], greater<int>());
+                (*it) = trains[i];
+            }
         }
     }
-    return result;
+    return static_cast<int>(lis.size() + lds.size() + 1);
 }
 
-int first_lte(int x, const vector<int> &A) {
-    int result{static_cast<int>(A.size())};
-    int lo{0};
-    int hi{result-1};
-    while (lo <= hi) {
-        int mid{lo + ((hi - lo) / 2)};
-        if (A[mid] <= x) {
-            result = min(result, mid);
-            hi = mid - 1;
-        } else {
-            lo = mid + 1;
-        }
-    }
-    return result;
-}
-
-
-size_t solve(const vector<int> &trains) {
-    cerr << "trn ";
-    copy(trains.begin(), trains.end(), ostream_iterator<int>(cerr, " "));
-    cerr << endl;
-
-    vector<int> lis;
-    vector<int> lds;
-    for (auto x : trains) {
-        if (lis.empty() || x > lis.back()) {
-            lis.push_back(x);
-        } else {
-            int i = first_gte(x, lis);
-            lis[i] = x;
-        }
-
-        if (lds.empty() || x < lds.back()) {
-            lds.push_back(x);
-        } else {
-            int i = first_lte(x, lds);
-            lds[i] = x;
-        }
-    }
-
-    cerr << "lis ";
-    copy(lis.begin(), lis.end(), ostream_iterator<int>(cerr, " "));
-    cerr << endl;
-    cerr << "lds ";
-    copy(lds.begin(), lds.end(), ostream_iterator<int>(cerr, " "));
-    cerr << endl;
-
-    int N{static_cast<int>(lis.size())};
-    int M{static_cast<int>(lds.size())};
-    int soln{max(N, M)};
-    for (auto x : trains) {
-        int i{first_gte(x, lis)};
-        int j{first_lte(x, lds)};
-        cerr << "x=" << x << " i=" << i << " j=" << j << endl;
-        soln = max(soln, (N - i) + (M - j) - 1);
-        soln = max(soln, i + j);
+int solve(const vector<int> &trains, int N) {
+    int soln{0};
+    for (int start{0}; start < N; ++start) {
+        soln = max(soln, computeBest(start, trains, N));
     }
     return soln;
 }
@@ -91,13 +50,12 @@ int main() {
     cin >> T;
     while (T--) {
         cin >> N;
-        cerr << "N=" << N << endl;
         vector<int> trains;
         if (N) {
             trains.reserve(N);
             copy_n(istream_iterator<int>(cin), N, back_inserter(trains));
         }
-        cout << solve(trains) << endl;
+        cout << solve(trains, N) << endl;
     }
     return EXIT_SUCCESS;
 }
