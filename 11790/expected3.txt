@@ -1,0 +1,10 @@
+Case 1. Increasing (64). Decreasing (49).
+Case 2. Decreasing (101). Increasing (99).
+Case 3. Decreasing (99). Increasing (98).
+Case 4. Decreasing (97). Increasing (94).
+Case 5. Increasing (98). Decreasing (87).
+Case 6. Increasing (94). Decreasing (85).
+Case 7. Increasing (93). Decreasing (83).
+Case 8. Increasing (90). Decreasing (75).
+Case 9. Increasing (90). Decreasing (73).
+Case 10. Increasing (87). Decreasing (71).

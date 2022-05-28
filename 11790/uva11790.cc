@@ -21,71 +21,30 @@ int main() {
         copy_n(istream_iterator<int>(cin), N, back_inserter(heights));
         copy_n(istream_iterator<int>(cin), N, back_inserter(widths));
 
-        map<int, int> next;
-        map<int, int> prev;
-        int bestIncreasing{INT_MIN};
+        vector<int> dpIncreasing(widths);
+        vector<int> dpDecreasing(widths);
+
         for (int i{0}; i < N; ++i) {
-            // This building only.
-            next[widths[i]] = heights[i];
-            bestIncreasing = max(bestIncreasing, widths[i]);
-
-            for (const auto &T : prev) {
-                // Skip this building.
-                auto it = next.find(T.first);
-                if (it == next.end()) {
-                    next[T.first] = T.second;
-                } else {
-                    it->second = min(it->second, T.second);
+            for (int j{i+1}; j < N; ++j) {
+                // Increasing
+                if (heights[i] < heights[j]) {
+                    dpIncreasing[j] = max(
+                        dpIncreasing[j],
+                        dpIncreasing[i] + widths[j]
+                    );
                 }
-
-                // Increasing with this building if possible.
-                if (heights[i] > T.second) {
-                    int nextWidth{T.first + widths[i]};
-                    bestIncreasing = max(bestIncreasing, nextWidth);
-                    auto it = next.find(nextWidth);
-                    if (it == next.end()) {
-                        next[nextWidth] = heights[i];
-                    } else {
-                        it->second = min(it->second, heights[i]);
-                    }
+                // Decreasing
+                if (heights[i] > heights[j]) {
+                    dpDecreasing[j] = max(
+                        dpDecreasing[j],
+                        dpDecreasing[i] + widths[j]
+                    );
                 }
             }
-            prev = next;
-            next = map<int, int>();
         }
 
-        next = map<int, int>();
-        prev = map<int, int>();
-        int bestDecreasing{INT_MIN};
-        for (int i{0}; i < N; ++i) {
-            // This building only.
-            next[widths[i]] = heights[i];
-            bestDecreasing = max(bestDecreasing, widths[i]);
-
-            for (const auto &T : prev) {
-                // Skip this building.
-                auto it = next.find(T.first);
-                if (it == next.end()) {
-                    next[T.first] = T.second;
-                } else {
-                    it->second = min(it->second, T.second);
-                }
-
-                // Decreasing with this building if possible.
-                if (heights[i] < T.second) {
-                    int nextWidth{T.first + widths[i]};
-                    bestDecreasing = max(bestDecreasing, nextWidth);
-                    auto it = next.find(nextWidth);
-                    if (it == next.end()) {
-                        next[nextWidth] = heights[i];
-                    } else {
-                        it->second = min(it->second, heights[i]);
-                    }
-                }
-            }
-            prev = next;
-            next = map<int, int>();
-        }
+        int bestIncreasing{*max_element(dpIncreasing.begin(), dpIncreasing.end())};
+        int bestDecreasing{*max_element(dpDecreasing.begin(), dpDecreasing.end())};
 
         cout << "Case " << t << ". ";
         if (bestIncreasing >= bestDecreasing) {
