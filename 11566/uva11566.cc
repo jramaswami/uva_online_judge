@@ -17,22 +17,18 @@ struct DimSum {
 };
 
 struct Solver {
-    number_t friendCount{0}, dimSumCount{0}, spendingLimit{0}, teaCharge{0};
+    number_t friendCount{0}, dimSumCount{0}, spendingLimit{0};
     vector<DimSum> dimSums;
 
     Solver(number_t _friendCount, number_t _spendingLimitEach, number_t _teaCharge, number_t _dimSumCount) {
         friendCount = _friendCount;
-        spendingLimit = (friendCount + 1) * _spendingLimitEach;
-        teaCharge = ((friendCount  + 1) * _teaCharge);
+        // Azrael's trick from forum.
+        spendingLimit =  static_cast<number_t>(floor(static_cast<double>(_spendingLimitEach * (friendCount + 1)) / 1.1 + 1e-6) - (friendCount + 1) * _teaCharge);
         dimSumCount = _dimSumCount;
     }
 
     void addDimSum(DimSum _dimSum) {
         dimSums.push_back(_dimSum);
-    }
-
-    number_t computePrice(number_t dimSumPrice) {
-        return static_cast<number_t>(ceil(1.1 * static_cast<double>(dimSumPrice + teaCharge)));
     }
 
     double solve() {
@@ -94,17 +90,13 @@ struct Solver {
         for (number_t dsCount{0}; dsCount <= dimSumLimit; ++dsCount) {
             for (number_t favor{0}; favor <= maxFavor; ++favor) {
                 // Check actual price.
-                if (prevDp[dsCount][favor] < INF) {
-                    number_t actualPrice = computePrice(prevDp[dsCount][favor]);
-                    if (actualPrice <= spendingLimit) {
-                        bestFavor = max(bestFavor, favor);
-                    }
+                if (prevDp[dsCount][favor] <= spendingLimit) {
+                    bestFavor = max(bestFavor, favor);
                 }
             }
         }
         return (static_cast<double>(bestFavor) / static_cast<double>(friendCount + 1));
     }
-
 };
 
 int main() {
@@ -114,7 +106,7 @@ int main() {
     // Solution code.
     number_t friendCount{0}, dimSumCount{0}, spendingLimitEach{0}, teaCharge{0};
     cin >> friendCount >> spendingLimitEach >> teaCharge >> dimSumCount;
-    while (friendCount != 0 || spendingLimitEach != 0 || teaCharge != 0 || dimSumCount != 0) {
+    while (friendCount || spendingLimitEach || teaCharge || dimSumCount) {
         Solver solver(friendCount, spendingLimitEach, teaCharge, dimSumCount);
         for (number_t i{0}; i < dimSumCount; ++i) {
             DimSum dimSum;
