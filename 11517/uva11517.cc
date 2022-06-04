@@ -6,6 +6,18 @@
 
 using namespace std;
 
+
+struct QItem {
+    int coinCount, coinSum, lastCoin;
+};
+
+bool operator< (const QItem &lhs, const QItem &rhs) {
+    if (lhs.coinCount == rhs.coinCount) {
+        return lhs.coinSum < rhs.coinSum;
+    }
+    return lhs.coinCount < rhs.coinCount;
+}
+
 int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -19,24 +31,29 @@ int main() {
         vector<int> coins;
         coins.reserve(N);
         copy_n(istream_iterator<int>(cin), N, back_inserter(coins));
-        int maxChange = accumulate(coins.begin(), coins.end(), 0);
-        vector<int> dp(maxChange+1, INT_MAX);
-        // $0 is reachable with 0 coins.
-        dp[0] = 0;
-        int solnAmount{INT_MAX};
-        int solnCount{INT_MAX};
-        for (auto coin : coins) {
-            for (int i{0}; i + coin <= maxChange; ++i) {
-                if (dp[i] < INT_MAX) {
-                    dp[i+coin] = min(dp[i+coin], dp[i] + 1);
-                    if ((target <= i + coin) && (i + coin <= solnAmount)) {
-                        solnAmount = min(solnAmount, i + coin);
-                        solnCount = min(solnCount, dp[i] + 1);
-                    }
+        priority_queue<QItem> pq;
+        pq.push(QItem{0, 0, -1});
+        int solnAmount{INT_MAX}, solnCount{INT_MAX};
+        while (!pq.empty()) {
+            QItem item = pq.top();
+            pq.pop();
+            if (target <= item.coinSum) {
+                if (item.coinSum == solnAmount) {
+                    solnCount = min(solnCount, item.coinCount);
+                } else if (item.coinSum < solnAmount) {
+                    solnAmount = item.coinSum;
+                    solnCount = item.coinCount;
+                }
+            }
+
+            for (int i{item.lastCoin + 1}; i < N; ++i) {
+                if (item.coinSum <= solnAmount) {
+                    pq.push(QItem{item.coinCount + 1, item.coinSum + coins[i], i});
                 }
             }
         }
         cout << solnAmount << " " << solnCount << "\n";
+
     }
     return EXIT_SUCCESS;
 }
