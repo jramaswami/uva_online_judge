@@ -11,6 +11,8 @@
 
 using namespace std;
 const int INF{1000000000};
+const double EPS{10e-9};
+const bool DEBUG{false};
 
 struct Solver {
         int storeCount{0}, roadCount{0}, dvdCount{0}, allVisited{0};
@@ -25,9 +27,9 @@ struct Solver {
                 int u{0}, v{0};
                 double wt0{0.0};
                 cin >> u >> v >> wt0;
-                int wt{static_cast<int>(100.0 * wt0)};
-                cost[u][v] = wt;
-                cost[v][u] = wt;
+                int wt{static_cast<int>(100.0 * (wt0 + EPS))};
+                cost[u][v] = min(wt, cost[u][v]);
+                cost[v][u] = min(wt, cost[v][u]);
             }
 
             // Floyd-Warshall to get cost between all pairs of stores.
@@ -43,11 +45,13 @@ struct Solver {
                 }
             }
 
-            cerr << "storeCount=" << storeCount << " roadCount=" << roadCount << endl;
-            cerr << "FW" << endl;
-            for (auto row : cost) {
-                copy(row.begin(), row.end(), ostream_iterator<int>(cerr, " "));
-                cerr << endl;
+            if (DEBUG) {
+                cerr << "storeCount=" << storeCount << " roadCount=" << roadCount << endl;
+                cerr << "FW" << endl;
+                for (auto row : cost) {
+                    copy(row.begin(), row.end(), ostream_iterator<int>(cerr, " "));
+                    cerr << endl;
+                }
             }
         }
 
@@ -59,18 +63,23 @@ struct Solver {
             discounts.push_back(0);
             for (int i{0}; i < dvdCount; ++i) {
                 int u{0};
-                double d0{0};
+                double d0{0.0};
                 cin >> u >> d0;
-                int d{static_cast<int>(100.0 * d0)};
+                d0 += EPS;
+                d0 *= 100.0;
+                int d{static_cast<int>(d0)};
                 destinations.push_back(u);
                 discounts.push_back(d);
             }
-            cerr << "destinations: ";
-            copy(destinations.begin(), destinations.end(), ostream_iterator<int>(cerr, " "));
-            cerr << endl;
-            cerr << "discounts: ";
-            copy(discounts.begin(), discounts.end(), ostream_iterator<int>(cerr, " "));
-            cerr << endl;
+
+            if (DEBUG) {
+                cerr << "destinations: ";
+                copy(destinations.begin(), destinations.end(), ostream_iterator<int>(cerr, " "));
+                cerr << endl;
+                cerr << "discounts: ";
+                copy(discounts.begin(), discounts.end(), ostream_iterator<int>(cerr, " "));
+                cerr << endl;
+            }
         }
 
         int getCost(int a, int b) {
@@ -78,39 +87,59 @@ struct Solver {
             return cost[u][v];
         }
 
-        // Fix This!!!  Convert to top-down instead of bottom-up.
-        double solve() {
-            allVisited = (1 << destinations.size()) - 1;
-            cache = vector<vector<int>>(destinations.size(), vector<int>(allVisited+1, -1));
-            int result = solve0(0, 1);
-            cerr << "cache" << endl;
-            for (auto row : cache) {
-                copy(row.begin(), row.end(), ostream_iterator<int>(cerr, " "));
-                cerr << endl;
-            }
-            double soln{static_cast<double>(result) / 100.0};
-            return soln;
-        }
+        int solve() {
+            // dp[last store visited][set of visited stores] = max discount
+            int allVisited{(1 << (dvdCount+1)) - 1};
+            vector<vector<int>> dp(dvdCount+1, vector<int>(allVisited+1, -INF));
 
-        // Return the money saved for a trip that visited that ended at the
-        // current store and visited the set of visited stores.
-        int solve0(int currentStore, int visitedStores) {
-            // The money saved (discounts - road costs) is the
-            // current discount + the money saved from any previous
-            // trips.
-            if (cache[currentStore][visitedStores] == -1) {
-                int result{0};
-                int previousVisitedStores{visitedStores ^ (1 << currentStore)};
-                for (int previousStore{0}; previousStore < storeCount; previousStore++) {
-                    // If the previous location is in the set of previously visited stores ...
-                    if ((1 << previousStore) & previousVisitedStores) {
-                        int discountsToHere{discounts[currentStore] - getCost(currentStore, previousStore)};
-                        result = max(result, discountsToHere + solve0(previousStore, previousVisitedStores));
+            // We must start at zero.
+            set<int> currQ = {1};
+            set<int> nextQ;
+            dp[0][1] = 0;
+
+            int soln{-INF};
+
+            for (int length = 2; length <= dvdCount+1; ++length) {
+
+                for (auto prevVisitedStores : currQ) {
+
+                    for (int lastStoreIndex{0}; lastStoreIndex <= dvdCount; ++lastStoreIndex) {
+                        if (prevVisitedStores > 1 && lastStoreIndex == 0) {
+                            // The last store can be 0 only when the only
+                            // visited store is 0 i.e. prevVisitedStores == 1
+                            continue;
+                        }
+
+                        for (int nextStoreIndex{1}; nextStoreIndex <= dvdCount; ++nextStoreIndex) {
+                            int mask = (1 << nextStoreIndex);
+                            if ((prevVisitedStores & mask) == 0) {
+                                int nextVisitedStores{prevVisitedStores | mask};
+                                nextQ.insert(nextVisitedStores);
+                                dp[nextStoreIndex][nextVisitedStores] = max(
+                                    dp[nextStoreIndex][nextVisitedStores],
+                                    dp[lastStoreIndex][prevVisitedStores] - getCost(lastStoreIndex, nextStoreIndex) + discounts[nextStoreIndex]
+                                );
+
+                                // I can finish my shopping here and just go home.
+                                soln = max(soln, dp[nextStoreIndex][nextVisitedStores] - getCost(nextStoreIndex, 0));
+                            }
+                        }
                     }
                 }
-                cache[currentStore][visitedStores] = result;
+                currQ.swap(nextQ);
+                nextQ.clear();
             }
-            return cache[currentStore][visitedStores];
+
+            if (DEBUG) {
+                for (auto row : dp) {
+                    copy(row.begin(), row.end(), ostream_iterator<int>(cerr, " "));
+                    cerr << endl;
+                }
+
+                cerr << soln << endl;
+            }
+
+            return soln;
         }
 };
 
@@ -128,8 +157,13 @@ int main() {
         solver.readRoadNetwork();
         cin >> solver.dvdCount;
         solver.readDvdDiscounts();
-        double soln = solver.solve();
-        cout << fixed << setprecision(2) << soln << endl;
+        int soln = solver.solve();
+        if (soln > 0) {
+            cout << "Daniel can save $" << fixed << setprecision(2) << (static_cast<double>(soln) / 100.0) << endl;
+        } else {
+            cout << "Don't leave the house\n";
+        }
+
     }
     return EXIT_SUCCESS;
 }
