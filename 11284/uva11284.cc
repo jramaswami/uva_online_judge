@@ -10,85 +10,108 @@
 #include <bits/stdc++.h>
 
 using namespace std;
-
-const double INF{INT_MAX};
-
-struct Road {
-    int u{0}, v{0}, weight{0};
-
-    Road(int _u, int _v, double _w) {
-        u = min(_u, _v);
-        v = max(_u, _v);
-        weight = static_cast<int>(100 * _w);
-    }
-
-    int neighbor(int x) {
-        if (x == u) {
-            return v;
-        }
-        return u;
-    }
-};
+const int INF{1000000000};
 
 struct Solver {
-    int storeCount{0}, roadCount{0};
-    vector<vector<Road>> graph;
-    vector<int> dvdSavings, costToHome;
+        int storeCount{0}, roadCount{0}, dvdCount{0}, allVisited{0};
+        vector<vector<int>> cost;
+        vector<int> destinations;
+        vector<int> discounts;
+        vector<vector<int>> cache;
 
-    void readGraph(int _storeCount, int _roadCount) {
-        storeCount = _storeCount;
-        roadCount = _roadCount;
-        graph = vector<vector<Road>>(storeCount+1, vector<Road>());
+        void readRoadNetwork() {
+            cost = vector<vector<int>>(storeCount+1, vector<int>(storeCount+1, INF));
+            for (int i{0}; i < roadCount; ++i) {
+                int u{0}, v{0};
+                double wt0{0.0};
+                cin >> u >> v >> wt0;
+                int wt{static_cast<int>(100.0 * wt0)};
+                cost[u][v] = wt;
+                cost[v][u] = wt;
+            }
 
-        for (int i{0}; i < roadCount; ++i) {
-            int u{0}, v{0};
-            double w{0.0};
-            cin >> u >> v >> w;
-            graph[u].emplace_back(u, v, w);
-            graph[v].emplace_back(u, v, w);
-        }
-    }
+            // Floyd-Warshall to get cost between all pairs of stores.
+            for (int u{0}; u <= storeCount; u++) {
+                cost[u][u] = 0;
+            }
 
-    void readDvdSavings(int dvdCount) {
-        dvdSavings = vector<int>(storeCount+1);
-        for (int i{0}; i < dvdCount; ++i) {
-            int t{0};
-            double s{0};
-            cin >> t >> s;
-            dvdSavings[t] += static_cast<int>(100 * s);
-        }
-    }
-
-    void computeDistanceToHome() {
-        costToHome = vector<int>(storeCount + 1, INF);
-        costToHome[0] = 0;
-        deque<pair<int, int>> Q;
-        Q.emplace_back(0, 0);
-        while (!Q.empty()) {
-            auto T = Q.front();
-            int u = T.first;
-            int d = T.second;
-            Q.pop_front();
-            if (costToHome[u] == d) {
-                for (auto rd : graph[u]) {
-                    int v{rd.neighbor(u)};
-                    if (costToHome[u] + rd.weight < costToHome[v]) {
-                        costToHome[v] = costToHome[u] + rd.weight;
-                        Q.emplace_back(v, costToHome[v]);
+            for (int k{0}; k <= storeCount; ++k) {
+                for (int i{0}; i <= storeCount; ++i) {
+                    for (int j{0}; j <= storeCount; ++j) {
+                        cost[i][j] = min(cost[i][j], cost[i][k] + cost[k][j]);
                     }
                 }
             }
+
+            cerr << "storeCount=" << storeCount << " roadCount=" << roadCount << endl;
+            cerr << "FW" << endl;
+            for (auto row : cost) {
+                copy(row.begin(), row.end(), ostream_iterator<int>(cerr, " "));
+                cerr << endl;
+            }
         }
-        copy(costToHome.begin(), costToHome.end(), ostream_iterator<double>(cerr, " ")); cerr << endl;
-    }
 
-    int solve() {
-        // TODO: TSP problem, with return trip being distance to home.
-        //       Check every length circuit.
-        int soln = 0;
+        void readDvdDiscounts() {
+            destinations.reserve(dvdCount+1);
+            discounts.reserve(dvdCount+1);
+            // Add home to destinations;
+            destinations.push_back(0);
+            discounts.push_back(0);
+            for (int i{0}; i < dvdCount; ++i) {
+                int u{0};
+                double d0{0};
+                cin >> u >> d0;
+                int d{static_cast<int>(100.0 * d0)};
+                destinations.push_back(u);
+                discounts.push_back(d);
+            }
+            cerr << "destinations: ";
+            copy(destinations.begin(), destinations.end(), ostream_iterator<int>(cerr, " "));
+            cerr << endl;
+            cerr << "discounts: ";
+            copy(discounts.begin(), discounts.end(), ostream_iterator<int>(cerr, " "));
+            cerr << endl;
+        }
 
-        return soln;
-    }
+        int getCost(int a, int b) {
+            int u{destinations[a]}, v{destinations[b]};
+            return cost[u][v];
+        }
+
+        // Fix This!!!  Convert to top-down instead of bottom-up.
+        double solve() {
+            allVisited = (1 << destinations.size()) - 1;
+            cache = vector<vector<int>>(destinations.size(), vector<int>(allVisited+1, -1));
+            int result = solve0(0, 1);
+            cerr << "cache" << endl;
+            for (auto row : cache) {
+                copy(row.begin(), row.end(), ostream_iterator<int>(cerr, " "));
+                cerr << endl;
+            }
+            double soln{static_cast<double>(result) / 100.0};
+            return soln;
+        }
+
+        // Return the money saved for a trip that visited that ended at the
+        // current store and visited the set of visited stores.
+        int solve0(int currentStore, int visitedStores) {
+            // The money saved (discounts - road costs) is the
+            // current discount + the money saved from any previous
+            // trips.
+            if (cache[currentStore][visitedStores] == -1) {
+                int result{0};
+                int previousVisitedStores{visitedStores ^ (1 << currentStore)};
+                for (int previousStore{0}; previousStore < storeCount; previousStore++) {
+                    // If the previous location is in the set of previously visited stores ...
+                    if ((1 << previousStore) & previousVisitedStores) {
+                        int discountsToHere{discounts[currentStore] - getCost(currentStore, previousStore)};
+                        result = max(result, discountsToHere + solve0(previousStore, previousVisitedStores));
+                    }
+                }
+                cache[currentStore][visitedStores] = result;
+            }
+            return cache[currentStore][visitedStores];
+        }
 };
 
 int main() {
@@ -99,13 +122,14 @@ int main() {
     int testCases{0};
     cin >> testCases;
     while (testCases--) {
+        // Read road network.
         Solver solver;
-        int storeCount{0}, roadCount{0}, dvdCount{0};
-        cin >> storeCount >> roadCount;
-        solver.readGraph(storeCount, roadCount);
-        cin >> dvdCount;
-        solver.readDvdSavings(dvdCount);
-        solver.computeDistanceToHome();
+        cin >> solver.storeCount >> solver.roadCount;
+        solver.readRoadNetwork();
+        cin >> solver.dvdCount;
+        solver.readDvdDiscounts();
+        double soln = solver.solve();
+        cout << fixed << setprecision(2) << soln << endl;
     }
     return EXIT_SUCCESS;
 }
