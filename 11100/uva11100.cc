@@ -30,6 +30,7 @@ int main() {
             }
         }
 
+        cout << Q.size() << "\n";
         for (auto X : Q) {
             for (size_t i{0}; i < X.size(); i++) {
                 cout << X[i];
