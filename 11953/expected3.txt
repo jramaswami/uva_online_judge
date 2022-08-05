@@ -1,0 +1,6 @@
+Case 1: 0
+Case 2: 50
+Case 3: 50
+Case 4: 0
+Case 5: 0
+Case 6: 6
