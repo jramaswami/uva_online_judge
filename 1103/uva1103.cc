@@ -5,22 +5,16 @@
 
 using namespace std;
 
-/*
-const vector<pair<int, int>> OFFSETS{
-    {0, 1}, {0, -1}, {1, 0}, {-1, 0},
-    {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
-};
-*/
-
 const vector<pair<int, int>> OFFSETS{
     {0, 1}, {0, -1}, {1, 0}, {-1, 0}
 };
 
-const vector<char> SIGNS{'A', 'D', 'J', 'K', 'S', 'W'};
-const vector<int> SPACE_TO_SIGN{-1, 5, 0, 3, 2, 3, 1};
+const vector<char> HOLES_TO_SIGN{'W', 'A', 'K', 'J', 'S', 'D'};
 
 const int BLACK{1};
 const int WHITE{0};
+const int NONE{INT_MIN};
+const int BACKGROUND{0};
 
 unsigned int hexValue(char c) {
     if (c >= '0' && c <= '9') {
@@ -37,6 +31,123 @@ unsigned int hexValue(char c) {
     return 0;
 }
 
+struct Bitmap {
+    int height{0}, width{0}, currBlackId{0}, currWhiteId{-2};
+    vector<vector<int>> grid;
+    vector<vector<int>> component;
+
+    Bitmap(int h, int w) {
+        height = h;
+        width = w;
+        grid = vector<vector<int>>(height, vector<int>(width, 0));
+        component = vector<vector<int>>(height, vector<int>(width, NONE));
+    }
+
+    bool inbounds(int r, int c) {
+        return r >= 0 && r < height && c >= 0 && c < width;
+    }
+
+    void fill(int initR, int initC, int color, int id) {
+        deque<pair<int, int>> queue;
+        queue.emplace_back(initR, initC);
+        component[initR][initC] = id;
+        while (!queue.empty()) {
+            int r{queue.front().first}, c{queue.front().second};
+            queue.pop_front();
+            for (pair<int, int> off : OFFSETS) { int r0{r + off.first}, c0{c + off.second};
+                if (inbounds(r0, c0) && grid[r0][c0] == color && component[r0][c0] == NONE) {
+                    queue.emplace_back(r0, c0);
+                    component[r0][c0] = id;
+                }
+            }
+        }
+    }
+
+    void fillBackground() {
+        // Top row.
+        for (int c{0}; c < width; c++) {
+            if (grid[0][c] == WHITE && component[0][c] == NONE) {
+                fill(0, c, WHITE, BACKGROUND);
+            }
+        }
+        // Bottom row.
+        for (int c{0}; c < width; c++) {
+            if (grid[height-1][c] == WHITE && component[height-1][c] == NONE) {
+                fill(height-1, c, WHITE, BACKGROUND);
+            }
+        }
+        // Left side.
+        for (int r{0}; r < height; r++) {
+            if (grid[r][0] == WHITE && component[r][0] == NONE) {
+                fill(r, 0, WHITE, BACKGROUND);
+            }
+        }
+        // Right side.
+        for (int r{0}; r < height; r++) {
+            if (grid[r][width-1] == WHITE && component[r][width-1] == NONE) {
+                fill(r, width-1, WHITE, BACKGROUND);
+            }
+        }
+    }
+
+    // Fill the black components.
+    void fillBlack() {
+        for (int r{0}; r < height; r++) {
+            for (int c{0}; c < width; c++) {
+                if (grid[r][c] == BLACK && component[r][c] == NONE) {
+                    currBlackId++;
+                    fill(r, c, BLACK, currBlackId);
+                }
+            }
+        }
+    }
+
+    // Fill the white components.
+    void fillWhite() {
+        for (int r{0}; r < height; r++) {
+            for (int c{0}; c < width; c++) {
+                if (grid[r][c] == WHITE && component[r][c] == NONE) {
+                    currWhiteId--;
+                    fill(r, c, WHITE, currWhiteId);
+                }
+            }
+        }
+    }
+
+    string findSymbols() {
+        vector<set<int>> holes(currBlackId+1, set<int>());
+        for (int r{0}; r < height; r++) {
+            for (int c{0}; c < width; c++) {
+                if (component[r][c] > 0) {
+                    // Black component.
+                    int compId{component[r][c]};
+                    for (pair<int, int> off : OFFSETS) {
+                        int r0{r + off.first}, c0{c + off.second};
+                        if (inbounds(r0, c0) && component[r0][c0] < 0) {
+                            holes[compId].insert(component[r0][c0]);
+                        }
+                    }
+                }
+            }
+        }
+        string result;
+        for (int i{1}; i <= currBlackId; i++) {
+            result.push_back(HOLES_TO_SIGN[holes[i].size()]);
+        }
+        sort(result.begin(), result.end());
+        return result;
+    }
+
+    // Scan image and count the number of each symbol.
+    string solve() {
+        // Start by identifying the background.
+        fillBackground();
+        fillBlack();
+        fillWhite();
+        return findSymbols();
+    }
+};
+
 int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -45,9 +156,8 @@ int main() {
     int H{0}, W{0}, caseNo{1};
     cin >> H >> W;
     while (H && W) {
-        vector<vector<int>> bitmap(H, vector<int>(W * 4, false));
 
-        /* cerr << H << "x" << W << endl; */
+        Bitmap bitmap(H, W*4);
         string junk, line;
         getline(cin, junk); // Read trailing newline.
         for (int h{0}; h < H; h++) {
@@ -58,100 +168,15 @@ int main() {
                 for (int b{3}; b >= 0; b--) {
                     unsigned int mask{1U << b};
                     if (mask & x) {
-                        bitmap[h][w] = 1;
+                        bitmap.grid[h][w] = 1;
                     }
                     w++;
                 }
             }
         }
 
-        // Assign an id to all the connected components.
-        // Record the black components.
-        vector<vector<int>> id(H, vector<int>(W * 4, 0));
-        int blackCounter{0};
-        int whiteCounter{0};
-        int currId{0};
-        vector<set<pair<int, int>>> blackComponents;
-        for (int r{0}; r < H; r++) {
-            for (int c{0}; c < W * 4; c++) {
-                if (id[r][c] == 0) {
-                    int currColor{bitmap[r][c]};
-                    if (currColor == BLACK) {
-                        blackCounter--;
-                        currId = blackCounter;
-                        blackComponents.push_back(set<pair<int, int>>());
-                    } else {
-                        whiteCounter++;
-                        currId = whiteCounter;
-                    }
-                    id[r][c] = currId;
-                    deque<pair<int, int>> queue;
-                    queue.emplace_back(r, c);
-                    while (!queue.empty()) {
-                        int r0{queue.front().first}, c0{queue.front().second};
-                        if (currColor == BLACK) {
-                            blackComponents.back().insert(queue.front());
-                        }
-                        queue.pop_front();
-                        for (pair<int, int> off : OFFSETS) {
-                            int r1{r0 + off.first}, c1{c0 + off.second};
-                            if (r1 >= 0 && r1 < H && c1 >= 0 && c1 < (W * 4)) {
-                                if (bitmap[r1][c1] == currColor && id[r1][c1] == 0) {
-                                    id[r1][c1] = currId;
-                                    queue.emplace_back(r1, c1);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // For each black component, count the number of white components
-        // it is touching.
-        vector<int> freqs{0, 0, 0, 0, 0, 0};
-        for (auto component : blackComponents) {
-            set<int> whiteComponents;
-            for (auto posn : component) {
-                int r{posn.first}, c{posn.second};
-                for (auto off : OFFSETS) {
-                    int r0{r + off.first}, c0{c + off.second};
-                    if (r0 >= 0 && r0 < H && c0 >= 0 && c0 < (4 * W)) {
-                        if (id[r0][c0] > 0) {
-                            whiteComponents.insert(id[r0][c0]);
-                        }
-                    }
-                }
-            }
-            int t{SPACE_TO_SIGN[whiteComponents.size()]};
-            freqs[t]++;
-        }
-
-        cout << "Case " << caseNo << ": ";
-        for (int i{0}; i < 6; i++) {
-            for (int j{0}; j < freqs[i]; j++) {
-                cout << SIGNS[i];
-            }
-        }
-        cout << "\n";
-        /*
-        for (auto row : id) {
-            for (auto x : row) {
-                if (x < 0) {
-                    cout << x;
-                } else {
-                    cout << " " << x;
-                }
-            }
-            cerr << endl;
-        }
-        */
-
-        for (auto row : bitmap) {
-            copy(row.begin(), row.end(), ostream_iterator<int>(cerr, ""));
-            cerr << endl;
-        }
-        cerr << endl;
+        string soln{bitmap.solve()};
+        cout << "Case " << caseNo << ": " << soln << "\n";
 
         cin >> H >> W;
         caseNo++;
