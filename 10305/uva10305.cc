@@ -9,7 +9,7 @@ struct Digraph {
     int nodeCount{0};
     vector<vector<int>> adj;
     deque<bool> visited;
-    deque<int> revPost;
+    vector<int> order;
 
     Digraph(int n) {
         nodeCount = n;
@@ -21,26 +21,26 @@ struct Digraph {
         adj[u].push_back(v);
     }
 
-    void reversePostOrder(int u) {
+    void dfs(int u) {
         visited[u] = true;
         for (int v : adj[u]) {
             if (!visited[v]) {
-                reversePostOrder(v);
+                dfs(v);
             }
         }
-        revPost.push_front(u);
+        order.push_back(u);
     }
 
-    deque<int> solve() {
-        revPost.clear();
+    vector<int> topologicalSort() {
+        order.clear();
         for (int u{1}; u <= nodeCount; u++) {
             if (!visited[u]) {
-                reversePostOrder(u);
+                dfs(u);
             }
         }
-        return revPost;
+        reverse(order.begin(), order.end());
+        return order;
     }
-
 };
 
 int main() {
@@ -50,7 +50,7 @@ int main() {
     // Solution code.
     int nodeCount{0}, edgeCount{0};
     cin >> nodeCount >> edgeCount;
-    while (nodeCount && edgeCount) {
+    while (nodeCount || edgeCount) {
         // Read graph.
         Digraph graph(nodeCount);
         for (int i{0}; i < edgeCount; i++) {
@@ -58,12 +58,12 @@ int main() {
             cin >> u >> v;
             graph.addEdge(u, v);
         }
-        deque<int> rp{graph.solve()};
-        for (size_t i{0}; i < rp.size(); i++) {
+        auto soln = graph.topologicalSort();
+        for (size_t i{0}; i < soln.size(); i++) {
             if (i) {
                 cout << " ";
             }
-            cout << rp[i];
+            cout << soln[i];
         }
         cout << "\n";
         cin >> nodeCount >> edgeCount;
