@@ -2,4 +2,3 @@ A B F G
 A B G F
 A G B F
 G A B F
-

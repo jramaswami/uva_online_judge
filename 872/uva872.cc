@@ -113,9 +113,11 @@ int main() {
         solver.solve();
         if (solver.isDAG) {
             copy(solver.soln.begin(), solver.soln.end(), ostream_iterator<string>(cout, "\n"));
-            cout << "\n";
         } else {
-            cout << "NO\n\n";
+            cout << "NO\n";
+        }
+        if (T) {
+            cout << "\n";
         }
     }
     return EXIT_SUCCESS;

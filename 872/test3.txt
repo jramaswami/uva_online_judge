@@ -11,4 +11,3 @@ A<B B<F
 
 A B C D E F
 B<A A<D F<D D<E
-
