@@ -89,6 +89,10 @@ int main() {
             graph.addEdge(u, v);
         }
 
+        // Easiest possible way to make transitive relationships is
+        // to do a DFS from each node to add edges from root to each
+        // node below root. Maybe even a new graph?
+
         // Topological sort to get the order of the beverages.
         GraphOrder order(graph);
         auto topologicalSort = order.reversePostorder;

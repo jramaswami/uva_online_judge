@@ -6,7 +6,7 @@ Script to verify solutions.
 """
 
 
-VERBOSE = False
+VERBOSE = True
 
 
 def read_test_data(test_file):
