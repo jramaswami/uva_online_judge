@@ -5,56 +5,6 @@
 
 using namespace std;
 
-
-struct Digraph {
-    int nodeCount;
-    vector<vector<int>> adj;
-
-    Digraph() {
-        nodeCount = 0;
-    };
-
-    Digraph(int n) {
-        nodeCount = n;
-        adj = vector<vector<int>>(nodeCount, vector<int>());
-    }
-
-    void addEdge(int u, int v) {
-        adj[u].push_back(v);
-    }
-};
-
-struct GraphOrder {
-    Digraph graph;
-    vector<int> reversePostorder;
-    vector<int> postorder;
-    vector<int> preorder;
-    deque<bool> visited;
-
-    GraphOrder(Digraph &g) {
-        graph = g;
-        visited = deque<bool>(graph.nodeCount, false);
-        for (int r{0}; r < graph.nodeCount; r++) {
-            if (!visited[r]) {
-                dfs(r);
-            }
-        }
-        reverse(reversePostorder.begin(), reversePostorder.end());
-    }
-
-    void dfs(int u) {
-        visited[u] = true;
-        preorder.push_back(u);
-        for (int v : graph.adj[u]) {
-            if (!visited[v]) {
-                dfs(v);
-            }
-        }
-        postorder.push_back(u);
-        reversePostorder.push_back(u);
-    }
-};
-
 int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -63,43 +13,50 @@ int main() {
     int N{0};
     int caseNo{1};
     while (cin >> N) {
-        // Map beverage name onto on id.
-        map<string, int> beverageIds;
-        vector<string> beverages;
+        // Read beverages
+        vector<string> bs;
+        bs.reserve(N);
+        map<string, int> bid;
         for (int i{0}; i < N; i++) {
-            string beverage;
-            cin >> beverage;
-            beverageIds[beverage] = i;
-            beverages.push_back(beverage);
+            string b;
+            cin >> b;
+            bs.push_back(b);
+            bid[b] = i;
         }
         // Read graph.
-        Digraph graph(N);
         int M{0};
         cin >> M;
         string line;
         getline(cin, line); // Read trailing newline.
+        vector<vector<int>> graph(N, vector<int>());
+        vector<int> indegree(N, 0);
         for (int i{0}; i < M; i++) {
             getline(cin, line);
             // Split on the first space.
             auto it = find(line.begin(), line.end(), ' ');
-            string left(line.begin(), it);
-            string right(it+1, line.end());
-            int u = beverageIds[left];
-            int v = beverageIds[right];
-            graph.addEdge(u, v);
+            string a(line.begin(), it);
+            string b(it+1, line.end());
+            int u{bid[a]};
+            int v{bid[b]};
+            graph[u].push_back(v);
+            indegree[v]++;
         }
 
-        // Easiest possible way to make transitive relationships is
-        // to do a DFS from each node to add edges from root to each
-        // node below root. Maybe even a new graph?
+        vector<int> soln;
+        for (int i{0}; i < N; i++) {
+            auto it = find(indegree.begin(), indegree.end(), 0);
+            int u = static_cast<int>(distance(indegree.begin(), it));
+            soln.push_back(u);
+            indegree[u] = -1;
+            for (int v : graph[u]) {
+                indegree[v]--;
+            }
+        }
 
-        // Topological sort to get the order of the beverages.
-        GraphOrder order(graph);
-        auto topologicalSort = order.reversePostorder;
         cout << "Case #" << caseNo << ": "
              << "Dilbert should drink beverages in this order:";
-        for (int u : topologicalSort) {
-            cout << " " << beverages[u];
+        for (size_t i{0}; i < soln.size(); i++) {
+            cout << " " << bs[soln[i]];
         }
         cout << ".\n\n";
 

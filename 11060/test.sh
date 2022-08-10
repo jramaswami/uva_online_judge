@@ -6,11 +6,10 @@ do
     if test -f "test$i.txt"; then
         # echo "Running test $i ..."
         ./$exec < test$i.txt > output$i.txt
-        # diff -w -s -B expected$i.txt output$i.txt
+        diff -w -s -B expected$i.txt output$i.txt
         # diff -s expected$i.txt output$i.txt
     fi
 done
-python3 check.py
 
 # for i in {1..10}
 # do
